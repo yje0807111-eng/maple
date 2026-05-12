@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>메이플식 자동사냥 RPG</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Malgun Gothic', sans-serif;
+    background: #1a1a2e;
+    color: #eee;
+    padding: 10px;
+    font-size: 13px;
+  }
+  h1 { font-size: 18px; margin-bottom: 8px; color: #ffcc66; }
+  h2 { font-size: 14px; margin-bottom: 6px; color: #88ccff; border-bottom: 1px solid #444; padding-bottom: 3px; }
+  h3 { font-size: 13px; margin: 8px 0 4px; color: #ffaa88; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr 1.3fr;
+    grid-template-rows: auto 1fr auto;
+    gap: 8px;
+    height: calc(100vh - 50px);
+  }
+  .panel {
+    background: #2a2a44;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 10px;
+    overflow-y: auto;
+  }
+  .top    { grid-column: 1 / 4; }
+  .left   { grid-column: 1; }
+  .center { grid-column: 2; }
+  .right  { grid-column: 3; }
+  .bottom { grid-column: 1 / 4; max-height: 130px; }
+
+  .stat-row { display: flex; justify-content: space-between; margin: 2px 0; font-size: 12px; }
+  .stat-row span:first-child { color: #aaa; }
+  .stat-row span:last-child  { color: #fff; font-weight: bold; }
+
+  .hp-bar, .mon-bar {
+    width: 100%; height: 14px;
+    background: #444; border-radius: 3px; overflow: hidden;
+    margin: 3px 0;
+  }
+  .hp-bar > div { height: 100%; background: linear-gradient(90deg, #ff4444, #ff8866); transition: width 0.2s; }
+  .mon-bar > div { height: 100%; background: linear-gradient(90deg, #aa44ff, #ff66aa); transition: width 0.2s; }
+
+  button {
+    background: #3a3a5e;
+    color: #eee;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 3px 7px;
+    margin: 2px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: inherit;
+  }
+  button:hover:not(:disabled) { background: #4a4a7e; border-color: #888; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.primary { background: #5a4a8e; }
+  button.danger  { background: #8e4a4a; }
+  button.success { background: #4a8e5a; }
+  button.gold    { background: #8e7a3a; }
+  button.flame   { background: #aa4422; }
+
+  .map-btn {
+    display: block; width: 100%; text-align: left;
+    margin: 3px 0; padding: 6px 8px;
+  }
+  .map-btn.active { background: #6a8e4a; border-color: #aaff88; }
+  .boss-tag { color: #ff8888; font-size: 10px; font-weight: bold; }
+
+  .item-card {
+    background: #1f1f38;
+    border: 2px solid #555;
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin: 4px 0;
+    font-size: 12px;
+    position: relative;
+  }
+  .item-card.equipped { background: #2a2a3a; }
+  .item-card.equipped::before {
+    content:'장착중'; position:absolute; top:-8px; right:6px;
+    background:#ffaa44; color:#222; font-size:10px; padding:1px 5px; border-radius:3px;
+  }
+  .item-name { font-weight: bold; color: #ffcc66; }
+  .item-slot { color: #88ccff; font-size: 11px; }
+  .item-line { color: #ccc; font-size: 11px; margin: 2px 0; }
+  .item-pot  { font-size: 11px; margin: 2px 0; }
+  .item-opt  { color: #ffddaa; font-size: 11px; margin: 2px 0; }
+  .item-flame { color: #ff9966; font-size: 11px; margin: 2px 0; }
+  .item-actions { margin-top: 4px; }
+
+  .grade-label {
+    display: inline-block;
+    font-size: 10px;
+    padding: 0 4px;
+    border-radius: 2px;
+    margin-right: 3px;
+    font-weight: bold;
+    color: #111;
+  }
+
+  .recipe-card {
+    background: #1f1f38;
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin: 4px 0;
+  }
+  .recipe-name { font-weight: bold; color: #ffcc66; }
+  .recipe-mat { color: #ccc; font-size: 11px; }
+  .recipe-mat.lack { color: #ff8888; }
+
+  .mat-row { display: flex; justify-content: space-between; font-size: 12px; padding: 2px 4px; }
+  .mat-row:nth-child(odd) { background: #222238; }
+
+  .tabs { display: flex; gap: 2px; margin-bottom: 6px; }
+  .tabs button { flex: 1; font-size: 12px; padding: 5px; }
+  .tabs button.active { background: #5a4a8e; border-color: #aa88ff; }
+
+  .log-line { font-size: 11px; color: #ccc; padding: 1px 4px; }
+  .log-line.gold { color: #ffcc66; }
+  .log-line.drop { color: #88ff88; }
+  .log-line.crit { color: #ff8866; }
+  .log-line.fail { color: #ff6666; }
+  .log-line.win  { color: #aaffaa; font-weight: bold; }
+  .log-line.legendary { color: #44ff88; font-weight: bold; }
+  .log-line.unique { color: #ffcc44; font-weight: bold; }
+  .log-line.epic { color: #cc88ff; }
+
+  .empty { color: #666; font-style: italic; font-size: 12px; padding: 8px; text-align: center; }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #1a1a2e; }
+  ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<h1>⚔️ 메이플식 자동사냥 RPG</h1>
+
+<div class="layout">
+  <div class="panel top" id="playerPanel"></div>
+  <div class="panel left" id="leftPanel"></div>
+  <div class="panel center" id="centerPanel"></div>
+  <div class="panel right" id="rightPanel"></div>
+  <div class="panel bottom" id="logPanel">
+    <h2>📜 로그</h2>
+    <div id="logContent"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   [A] 정적 데이터
+   ========================================================================= */
+
+const MATERIALS = {
+  slime_jelly: { name: '슬라임 젤리',  sellPrice: 2  },
+  wolf_fang:   { name: '늑대 송곳니',  sellPrice: 5  },
+  iron_ore:    { name: '철광석',       sellPrice: 8  },
+  magic_dust:  { name: '마력의 가루',  sellPrice: 15 },
+};
+
+const MAPS = {
+  meadow: { id:'meadow', name:'초원', monster:'슬라임', mHp:20, mAtk:3, mDef:0,
+            goldMin:2, goldMax:5, isBoss:false, reqLevel:1, expReward:5,
+            drops:[{matId:'slime_jelly',chance:0.7}] },
+  forest: { id:'forest', name:'숲', monster:'늑대', mHp:60, mAtk:8, mDef:2,
+            goldMin:6, goldMax:12, isBoss:false, reqLevel:3, expReward:15,
+            drops:[{matId:'wolf_fang',chance:0.5},{matId:'slime_jelly',chance:0.2}] },
+  cave:   { id:'cave', name:'광산 동굴', monster:'광물 골렘', mHp:180, mAtk:18, mDef:8,
+            goldMin:15, goldMax:30, isBoss:true, reqLevel:7, expReward:40,
+            drops:[{matId:'iron_ore',chance:0.6},{matId:'magic_dust',chance:0.15},
+                   {flame:'powerful',chance:0.005}] },
+};
+
+const ITEM_TEMPLATES = {
+  wood_sword:    { id:'wood_sword',    name:'나무 검',         slot:'weapon',    tier:1, baseAtk:5,  baseDef:0,  recipe:{ slime_jelly:5 } },
+  iron_sword:    { id:'iron_sword',    name:'강철 검',         slot:'weapon',    tier:2, baseAtk:15, baseDef:0,  recipe:{ wolf_fang:5, iron_ore:3 } },
+  mithril_blade: { id:'mithril_blade', name:'미스릴 블레이드', slot:'weapon',    tier:3, baseAtk:35, baseDef:2,  recipe:{ iron_ore:10, magic_dust:5 } },
+  leather_armor: { id:'leather_armor', name:'가죽 갑옷',       slot:'armor',     tier:1, baseAtk:0,  baseDef:8,  recipe:{ wolf_fang:3, slime_jelly:3 } },
+  iron_armor:    { id:'iron_armor',    name:'강철 갑옷',       slot:'armor',     tier:2, baseAtk:0,  baseDef:20, recipe:{ iron_ore:6, wolf_fang:4 } },
+  copper_ring:   { id:'copper_ring',   name:'구리 반지',       slot:'accessory', tier:1, baseAtk:2,  baseDef:2,  recipe:{ magic_dust:2, iron_ore:2 } },
+  mythic_amulet: { id:'mythic_amulet', name:'신비의 목걸이',   slot:'accessory', tier:3, baseAtk:5,  baseDef:5,  recipe:{ magic_dust:8, iron_ore:5 } },
+};
+
+// 일반 제작 옵션 (티어와 무관, 적은 효과)
+const OPTION_POOL = [
+  { key:'atkFlat',  label:'공격력',  min:1, max:5  },
+  { key:'defFlat',  label:'방어력',  min:1, max:5  },
+  { key:'hpFlat',   label:'HP',     min:5, max:20 },
+  { key:'critFlat', label:'크리율',  min:1, max:4  },
+];
+
+/* 잠재능력 등급별 풀
+   - 레어: 단순 수치
+   - 에픽: % 옵션 등장
+   - 유니크: 더 강한 % + 보스데미지 진입
+   - 레전더리: 데미지 % + 보스데미지 강화 */
+const GRADES = ['rare', 'epic', 'unique', 'legendary'];
+const GRADE_NAMES   = { rare:'레어', epic:'에픽', unique:'유니크', legendary:'레전더리' };
+const GRADE_COLORS  = { rare:'#5a9aff', epic:'#aa55ff', unique:'#ffcc44', legendary:'#44ff88' };
+const GRADE_UPGRADE = { rare:0.10, epic:0.05, unique:0.01, legendary:0 };
+
+const POTENTIAL_POOLS = {
+  rare: [
+    { key:'atkFlat',  label:'공격력', min:3, max:8,  weight:3 },
+    { key:'defFlat',  label:'방어력', min:3, max:8,  weight:3 },
+    { key:'hpFlat',   label:'HP',    min:10,max:30, weight:3 },
+    { key:'critFlat', label:'크리율', min:1, max:3,  weight:2 },
+  ],
+  epic: [
+    { key:'atkPct',  label:'공격력', min:3, max:6,  weight:3 },
+    { key:'defPct',  label:'방어력', min:3, max:6,  weight:3 },
+    { key:'hpPct',   label:'HP',    min:3, max:6,  weight:3 },
+    { key:'critDmg', label:'크리뎀', min:3, max:8,  weight:2 },
+    { key:'allStat', label:'올스탯', min:2, max:4,  weight:1 },
+  ],
+  unique: [
+    { key:'atkPct',  label:'공격력', min:5, max:9,  weight:3 },
+    { key:'defPct',  label:'방어력', min:5, max:9,  weight:3 },
+    { key:'hpPct',   label:'HP',    min:5, max:9,  weight:3 },
+    { key:'critDmg', label:'크리뎀', min:6, max:12, weight:2 },
+    { key:'allStat', label:'올스탯', min:3, max:6,  weight:2 },
+    { key:'bossDmg', label:'보스뎀', min:4, max:10, weight:1 },
+  ],
+  legendary: [
+    { key:'atkPct',  label:'공격력', min:7, max:12, weight:3 },
+    { key:'defPct',  label:'방어력', min:7, max:12, weight:3 },
+    { key:'hpPct',   label:'HP',    min:7, max:12, weight:2 },
+    { key:'critDmg', label:'크리뎀', min:10,max:20, weight:2 },
+    { key:'allStat', label:'올스탯', min:5, max:9,  weight:2 },
+    { key:'bossDmg', label:'보스뎀', min:8, max:15, weight:2 },
+    { key:'dmg',     label:'데미지', min:5, max:10, weight:1 },
+  ],
+};
+
+/* 환생의 불꽃 — 4줄 보너스 스탯, 등급별 풀과 수치가 다름 */
+const FLAME_TYPES = ['small','master','eternal','powerful'];
+const FLAME_NAMES = { small:'작은 불꽃', master:'명장의 불꽃', eternal:'영원한 불꽃', powerful:'강력한 불꽃' };
+const FLAME_COLORS = { small:'#aaaaaa', master:'#88ccff', eternal:'#ffcc44', powerful:'#ff6644' };
+
+const FLAME_POOLS = {
+  small:    { lines:4, options:[
+                { key:'atkFlat',  min:1, max:3,  weight:3 },
+                { key:'defFlat',  min:1, max:3,  weight:3 },
+                { key:'hpFlat',   min:5, max:15, weight:3 },
+                { key:'critFlat', min:1, max:2,  weight:1 },
+                { key:'allStat',  min:1, max:2,  weight:1 },
+              ]},
+  master:   { lines:4, options:[
+                { key:'atkFlat',  min:3, max:6,  weight:3 },
+                { key:'defFlat',  min:3, max:6,  weight:3 },
+                { key:'hpFlat',   min:15,max:30, weight:3 },
+                { key:'critFlat', min:1, max:3,  weight:2 },
+                { key:'allStat',  min:2, max:4,  weight:2 },
+              ]},
+  eternal:  { lines:4, options:[
+                { key:'atkFlat',  min:5, max:10, weight:3 },
+                { key:'defFlat',  min:5, max:10, weight:3 },
+                { key:'hpFlat',   min:25,max:50, weight:2 },
+                { key:'allStat',  min:3, max:6,  weight:2 },
+                { key:'atkPct',   min:2, max:4,  weight:1 },
+                { key:'bossDmg',  min:2, max:5,  weight:1 },
+              ]},
+  powerful: { lines:4, options:[
+                { key:'atkFlat',  min:8, max:15, weight:2 },
+                { key:'defFlat',  min:8, max:15, weight:2 },
+                { key:'hpFlat',   min:40,max:80, weight:2 },
+                { key:'allStat',  min:5, max:9,  weight:3 },
+                { key:'atkPct',   min:3, max:6,  weight:2 },
+                { key:'bossDmg',  min:4, max:8,  weight:2 },
+                { key:'dmg',      min:2, max:5,  weight:1 },
+              ]},
+};
+
+const FLAME_PRICES = { small:50, master:200, eternal:500, powerful:1500 };
+
+const ENHANCE_TABLE = [
+  { success:0.95, destroy:0    },
+  { success:0.90, destroy:0    },
+  { success:0.85, destroy:0    },
+  { success:0.75, destroy:0    },
+  { success:0.65, destroy:0    },
+  { success:0.55, destroy:0.05 },
+  { success:0.45, destroy:0.10 },
+  { success:0.35, destroy:0.15 },
+  { success:0.25, destroy:0.20 },
+  { success:0.15, destroy:0.30 },
+];
+const MAX_ENHANCE = 10;
+
+const PRICE_CUBE = 100;
+const PRICE_ADD_CUBE = 150;
+
+/* =========================================================================
+   [B] 상태
+   ========================================================================= */
+
+const state = {
+  player: { level:1, exp:0, hp:100, atkBase:5, defBase:2, gold:50 },
+  equipment: { weapon:null, armor:null, accessory:null },
+  inventory: [],
+  materials: { slime_jelly:0, wolf_fang:0, iron_ore:0, magic_dust:0 },
+  consumables: {
+    cube:0, addCube:0,
+    flame_small:0, flame_master:0, flame_eternal:0, flame_powerful:0,
+  },
+  currentMap: null,
+  combat: { monsterHp:0, monsterMaxHp:0, kills:0 },
+  log: [],
+  activeTab: 'craft',
+  uidCounter: 1,
+};
+
+let huntInterval = null;
+
+/* =========================================================================
+   [J] 유틸
+   ========================================================================= */
+
+function rand(min, max) { return Math.floor(Math.random()*(max-min+1)) + min; }
+function rollChance(p)  { return Math.random() < p; }
+function pickWeighted(arr) {
+  const total = arr.reduce((s,x) => s + x.weight, 0);
+  let r = Math.random() * total;
+  for (const x of arr) { r -= x.weight; if (r <= 0) return x; }
+  return arr[arr.length-1];
+}
+function genUid() { return 'i' + (state.uidCounter++); }
+function log(msg, cls='') {
+  state.log.unshift({ msg, cls });
+  if (state.log.length > 50) state.log.pop();
+}
+
+/* =========================================================================
+   [B-2] 옵션 라벨링 — 모든 스탯 key 통합 처리
+   ========================================================================= */
+
+const STAT_LABELS = {
+  atkFlat:'공격력', defFlat:'방어력', hpFlat:'HP', critFlat:'크리율',
+  atkPct:'공격력', defPct:'방어력', hpPct:'HP', critDmg:'크리뎀',
+  allStat:'올스탯', bossDmg:'보스뎀', dmg:'데미지',
+};
+const STAT_PCT = new Set(['atkPct','defPct','hpPct','critDmg','bossDmg','dmg','critFlat']);
+
+function statLabel(opt) {
+  const name = STAT_LABELS[opt.key] || opt.key;
+  const suffix = STAT_PCT.has(opt.key) ? '%' : '';
+  return `${name} +${opt.value}${suffix}`;
+}
+
+/* =========================================================================
+   [C] 스탯 계산
+   ========================================================================= */
+
+function getTotals() {
+  const p = state.player;
+  let atk = p.atkBase;
+  let def = p.defBase;
+  let hpFlat = 0;
+  let crit = 5;
+  let critDmg = 50;
+  let atkPct = 0, defPct = 0, hpPct = 0;
+  let bossDmg = 0, dmg = 0;
+
+  function applyOpt(o) {
+    if (o.key === 'atkFlat')  atk += o.value;
+    else if (o.key === 'defFlat')  def += o.value;
+    else if (o.key === 'hpFlat')   hpFlat += o.value;
+    else if (o.key === 'critFlat') crit += o.value;
+    else if (o.key === 'atkPct')   atkPct += o.value;
+    else if (o.key === 'defPct')   defPct += o.value;
+    else if (o.key === 'hpPct')    hpPct += o.value;
+    else if (o.key === 'critDmg')  critDmg += o.value;
+    else if (o.key === 'allStat')  { atk += o.value; def += o.value; }
+    else if (o.key === 'bossDmg')  bossDmg += o.value;
+    else if (o.key === 'dmg')      dmg += o.value;
+  }
+
+  for (const slot of ['weapon','armor','accessory']) {
+    const item = state.equipment[slot];
+    if (!item) continue;
+    const enhMult = 1 + item.enhanceLevel * 0.2;
+    atk += Math.floor(item.baseAtk * enhMult);
+    def += Math.floor(item.baseDef * enhMult);
+    item.options.forEach(applyOpt);
+    item.potentials.forEach(o => o && applyOpt(o));
+    item.addPotentials.forEach(o => o && applyOpt(o));
+    if (item.flame) item.flame.forEach(applyOpt);
+  }
+
+  atk   = Math.floor(atk * (1 + atkPct/100));
+  def   = Math.floor(def * (1 + defPct/100));
+  const baseHp = 100 + (p.level-1) * 20;
+  const maxHp = Math.floor((baseHp + hpFlat) * (1 + hpPct/100));
+  return { atk, def, maxHp, crit, critDmg, bossDmg, dmg };
+}
+
+function clampHp() {
+  const m = getTotals().maxHp;
+  if (state.player.hp > m) state.player.hp = m;
+}
+
+/* =========================================================================
+   [D] 아이템 생성 (제작)
+   ========================================================================= */
+
+function rollOptionsForTier(tier) {
+  const count = rand(tier, tier + 1);
+  const opts = [];
+  for (let i = 0; i < count; i++) {
+    const pool = OPTION_POOL[rand(0, OPTION_POOL.length-1)];
+    opts.push({ key: pool.key, value: rand(pool.min, pool.max) });
+  }
+  return opts;
+}
+
+function createItemInstance(templateId) {
+  const t = ITEM_TEMPLATES[templateId];
+  return {
+    uid: genUid(),
+    templateId,
+    slot: t.slot,
+    baseAtk: t.baseAtk,
+    baseDef: t.baseDef,
+    options: rollOptionsForTier(t.tier),
+    potentials:    [null, null, null],
+    potentialGrade: 'rare',
+    addPotentials: [null, null, null],
+    addPotentialGrade: 'rare',
+    flame: null,
+    enhanceLevel: 0,
+  };
+}
+
+function canCraft(templateId) {
+  const r = ITEM_TEMPLATES[templateId].recipe;
+  for (const mat in r) if ((state.materials[mat]||0) < r[mat]) return false;
+  return true;
+}
+
+function craft(templateId) {
+  if (!canCraft(templateId)) { log('재료가 부족합니다.', 'fail'); return; }
+  const r = ITEM_TEMPLATES[templateId].recipe;
+  for (const mat in r) state.materials[mat] -= r[mat];
+  const item = createItemInstance(templateId);
+  state.inventory.push(item);
+  log(`🔨 ${ITEM_TEMPLATES[templateId].name} 제작 완료! (옵션 ${item.options.length}개)`, 'win');
+  render();
+}
+
+/* =========================================================================
+   [E] 강화
+   ========================================================================= */
+
+function enhanceCost(level) { return (level + 1) * 20; }
+
+function enhance(uid) {
+  const item = findItem(uid);
+  if (!item) return;
+  if (item.enhanceLevel >= MAX_ENHANCE) { log('이미 최대 강화입니다.', 'fail'); return; }
+  const cost = enhanceCost(item.enhanceLevel);
+  if (state.player.gold < cost) { log(`강화에 ${cost}골드 필요`, 'fail'); return; }
+  state.player.gold -= cost;
+  const entry = ENHANCE_TABLE[item.enhanceLevel];
+  const r = Math.random();
+  if (r < entry.success) {
+    item.enhanceLevel++;
+    log(`✨ 강화 성공! +${item.enhanceLevel}`, 'win');
+  } else if (r < entry.success + entry.destroy) {
+    removeItem(uid);
+    log(`💥 강화 실패 — 아이템 파괴!`, 'fail');
+  } else {
+    if (item.enhanceLevel >= 5) {
+      item.enhanceLevel--;
+      log(`⬇️ 강화 실패 — 단계 하락 (+${item.enhanceLevel})`, 'fail');
+    } else {
+      log(`⚠️ 강화 실패 (유지)`, 'fail');
+    }
+  }
+  clampHp();
+  render();
+}
+
+/* =========================================================================
+   [F] 잠재능력 / 에디셔널 잠재능력 (큐브)
+   ========================================================================= */
+
+function rollPotentialLines(grade) {
+  const pool = POTENTIAL_POOLS[grade];
+  // 슬롯별 채워질 확률 - 메이플처럼 상위 슬롯일수록 안 비어있을 확률 ↑
+  const fillChances = [1.0, 0.7, 0.4];
+  return fillChances.map(p => {
+    if (!rollChance(p)) return null;
+    const meta = pickWeighted(pool);
+    return { key: meta.key, value: rand(meta.min, meta.max) };
+  });
+}
+
+function applyCube(uid, isAdditional) {
+  const item = findItem(uid);
+  if (!item) return;
+  const stockKey = isAdditional ? 'addCube' : 'cube';
+  const gradeKey = isAdditional ? 'addPotentialGrade' : 'potentialGrade';
+  const slotsKey = isAdditional ? 'addPotentials' : 'potentials';
+  const cubeName = isAdditional ? '에디셔널 큐브' : '잠재 큐브';
+
+  if (state.consumables[stockKey] <= 0) { log(`${cubeName} 부족`, 'fail'); return; }
+  state.consumables[stockKey]--;
+
+  // 등급 상승 시도
+  const cur = item[gradeKey];
+  const up = GRADE_UPGRADE[cur];
+  if (up > 0 && rollChance(up)) {
+    const idx = GRADES.indexOf(cur);
+    item[gradeKey] = GRADES[idx + 1];
+    log(`🌟 등급 상승! ${GRADE_NAMES[cur]} → ${GRADE_NAMES[item[gradeKey]]}`, item[gradeKey]);
+  }
+
+  // 잠재옵션 리롤
+  item[slotsKey] = rollPotentialLines(item[gradeKey]);
+  const filled = item[slotsKey].filter(x => x).length;
+  log(`🧪 ${cubeName} 사용 [${GRADE_NAMES[item[gradeKey]]}] ${filled}줄`);
+  clampHp();
+  render();
+}
+
+/* =========================================================================
+   [F-2] 환생의 불꽃
+   ========================================================================= */
+
+function rollFlame(flameType) {
+  const pool = FLAME_POOLS[flameType];
+  const lines = [];
+  for (let i = 0; i < pool.lines; i++) {
+    const meta = pickWeighted(pool.options);
+    lines.push({ key: meta.key, value: rand(meta.min, meta.max) });
+  }
+  return lines;
+}
+
+function useFlame(uid, flameType) {
+  const item = findItem(uid);
+  if (!item) return;
+  const stockKey = 'flame_' + flameType;
+  if (state.consumables[stockKey] <= 0) { log(`${FLAME_NAMES[flameType]} 부족`, 'fail'); return; }
+  state.consumables[stockKey]--;
+  item.flame = rollFlame(flameType);
+  item.flameType = flameType;
+  log(`🔥 ${FLAME_NAMES[flameType]} 적용`, flameType === 'powerful' ? 'legendary' : '');
+  clampHp();
+  render();
+}
+
+/* =========================================================================
+   [G] 인벤토리/장비
+   ========================================================================= */
+
+function findItem(uid) {
+  if (!uid) return null;
+  for (const slot of ['weapon','armor','accessory']) {
+    if (state.equipment[slot]?.uid === uid) return state.equipment[slot];
+  }
+  return state.inventory.find(i => i.uid === uid) || null;
+}
+
+function removeItem(uid) {
+  for (const slot of ['weapon','armor','accessory']) {
+    if (state.equipment[slot]?.uid === uid) { state.equipment[slot] = null; return; }
+  }
+  state.inventory = state.inventory.filter(i => i.uid !== uid);
+}
+
+function equip(uid) {
+  const idx = state.inventory.findIndex(i => i.uid === uid);
+  if (idx < 0) return;
+  const item = state.inventory[idx];
+  const slot = item.slot;
+  state.inventory.splice(idx, 1);
+  if (state.equipment[slot]) state.inventory.push(state.equipment[slot]);
+  state.equipment[slot] = item;
+  log(`🛡️ ${ITEM_TEMPLATES[item.templateId].name} 장착`);
+  clampHp();
+  render();
+}
+
+function unequip(slot) {
+  if (!state.equipment[slot]) return;
+  state.inventory.push(state.equipment[slot]);
+  state.equipment[slot] = null;
+  clampHp();
+  render();
+}
+
+function getSellPrice(item) {
+  let p = (item.baseAtk + item.baseDef) * 3;
+  p += item.options.length * 10;
+  p += item.potentials.filter(x => x).reduce((s,x) => s + x.value * 2, 0);
+  p += item.addPotentials.filter(x => x).reduce((s,x) => s + x.value * 2, 0);
+  if (item.flame) p += item.flame.reduce((s,x) => s + x.value * 1.5, 0);
+  p += item.enhanceLevel * 25;
+  // 등급 보너스
+  p += GRADES.indexOf(item.potentialGrade) * 50;
+  p += GRADES.indexOf(item.addPotentialGrade) * 50;
+  return Math.max(5, Math.floor(p));
+}
+
+function sellItem(uid) {
+  const item = findItem(uid);
+  if (!item) return;
+  const price = getSellPrice(item);
+  removeItem(uid);
+  state.player.gold += price;
+  log(`💰 ${ITEM_TEMPLATES[item.templateId].name} 판매 +${price}G`, 'gold');
+  render();
+}
+
+/* =========================================================================
+   [H] 상점
+   ========================================================================= */
+
+function sellMaterial(matId, qty) {
+  const have = state.materials[matId] || 0;
+  qty = Math.min(qty, have);
+  if (qty <= 0) return;
+  const price = qty * MATERIALS[matId].sellPrice;
+  state.materials[matId] -= qty;
+  state.player.gold += price;
+  log(`💰 ${MATERIALS[matId].name} x${qty} 판매 +${price}G`, 'gold');
+  render();
+}
+
+function buyCube(qty)    { buyItem('cube', PRICE_CUBE, qty, '잠재 큐브'); }
+function buyAddCube(qty) { buyItem('addCube', PRICE_ADD_CUBE, qty, '에디셔널 큐브'); }
+function buyFlame(type, qty) {
+  buyItem('flame_'+type, FLAME_PRICES[type], qty, FLAME_NAMES[type]);
+}
+function buyItem(stockKey, unitPrice, qty, name) {
+  const cost = unitPrice * qty;
+  if (state.player.gold < cost) { log('골드 부족', 'fail'); return; }
+  state.player.gold -= cost;
+  state.consumables[stockKey] += qty;
+  log(`🛒 ${name} x${qty} 구매 (-${cost}G)`);
+  render();
+}
+
+/* =========================================================================
+   [C-2] 전투/자동사냥
+   ========================================================================= */
+
+function startHunt(mapId) {
+  const map = MAPS[mapId];
+  if (state.player.level < map.reqLevel) { log(`Lv.${map.reqLevel} 필요`, 'fail'); return; }
+  state.currentMap = mapId;
+  state.combat.monsterHp = 0;
+  state.combat.monsterMaxHp = map.mHp;
+  state.combat.kills = 0;
+  if (huntInterval) clearInterval(huntInterval);
+  huntInterval = setInterval(tick, 1000);
+  log(`🗺️ ${map.name} 사냥 시작`);
+  render();
+}
+
+function stopHunt() {
+  if (huntInterval) { clearInterval(huntInterval); huntInterval = null; }
+  state.currentMap = null;
+  state.combat.monsterHp = 0;
+  state.player.hp = getTotals().maxHp;
+  log('사냥 중단 (HP 회복)');
+  render();
+}
+
+function tick() {
+  if (!state.currentMap) return;
+  const map = MAPS[state.currentMap];
+  const totals = getTotals();
+
+  if (state.combat.monsterHp <= 0) {
+    state.combat.monsterHp = map.mHp;
+    state.combat.monsterMaxHp = map.mHp;
+  }
+
+  const isCrit = rollChance(totals.crit / 100);
+  let dmg = Math.max(1, totals.atk - map.mDef);
+  if (isCrit) dmg = Math.floor(dmg * (1 + totals.critDmg/100));
+  dmg = Math.floor(dmg * (1 + totals.dmg/100));
+  if (map.isBoss) dmg = Math.floor(dmg * (1 + totals.bossDmg/100));
+  state.combat.monsterHp -= dmg;
+  if (isCrit) log(`💥 크리티컬! ${dmg} 데미지`, 'crit');
+
+  if (state.combat.monsterHp <= 0) {
+    onMonsterKill(map);
+  } else {
+    const mDmg = Math.max(1, map.mAtk - totals.def);
+    state.player.hp -= mDmg;
+    if (state.player.hp <= 0) {
+      onPlayerDeath();
+      return;
+    }
+  }
+  render();
+}
+
+function onMonsterKill(map) {
+  state.combat.kills++;
+  const gold = rand(map.goldMin, map.goldMax);
+  state.player.gold += gold;
+  log(`⚔️ ${map.monster} 처치 +${gold}G`, 'gold');
+
+  for (const drop of map.drops) {
+    if (!rollChance(drop.chance)) continue;
+    if (drop.matId) {
+      state.materials[drop.matId] = (state.materials[drop.matId]||0) + 1;
+      log(`📦 ${MATERIALS[drop.matId].name} 획득`, 'drop');
+    } else if (drop.flame) {
+      state.consumables['flame_'+drop.flame]++;
+      log(`🔥 ${FLAME_NAMES[drop.flame]} 드랍!`, 'legendary');
+    }
+  }
+
+  gainExp(map.expReward);
+  state.combat.monsterHp = 0;
+}
+
+function onPlayerDeath() {
+  const lost = Math.floor(state.player.gold * 0.1);
+  state.player.gold -= lost;
+  state.player.hp = getTotals().maxHp;
+  log(`💀 사망! ${lost}G 잃음`, 'fail');
+  stopHunt();
+}
+
+function gainExp(amt) {
+  state.player.exp += amt;
+  while (state.player.exp >= expForLevel(state.player.level)) {
+    state.player.exp -= expForLevel(state.player.level);
+    state.player.level++;
+    state.player.atkBase += 2;
+    state.player.defBase += 1;
+    state.player.hp = getTotals().maxHp;
+    log(`🎉 레벨업! Lv.${state.player.level}`, 'win');
+  }
+}
+
+function expForLevel(lv) { return lv * 50; }
+
+/* =========================================================================
+   [I] 렌더링
+   ========================================================================= */
+
+function renderPlayer() {
+  const p = state.player;
+  const t = getTotals();
+  const hpPct = (p.hp / t.maxHp) * 100;
+  document.getElementById('playerPanel').innerHTML = `
+    <div style="display:grid; grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr; gap:14px; align-items:center;">
+      <div>
+        <div style="font-size:15px; color:#ffcc66; margin-bottom:3px;">🧙 Lv.${p.level} 모험가</div>
+        <div class="hp-bar"><div style="width:${hpPct}%"></div></div>
+        <div style="font-size:11px;">HP ${p.hp} / ${t.maxHp}</div>
+        <div style="font-size:11px; color:#aaa;">EXP ${p.exp} / ${expForLevel(p.level)}</div>
+      </div>
+      <div>
+        <div class="stat-row"><span>공격력</span><span>${t.atk}</span></div>
+        <div class="stat-row"><span>방어력</span><span>${t.def}</span></div>
+      </div>
+      <div>
+        <div class="stat-row"><span>크리율</span><span>${t.crit}%</span></div>
+        <div class="stat-row"><span>크리뎀</span><span>${t.critDmg}%</span></div>
+      </div>
+      <div>
+        <div class="stat-row"><span>데미지</span><span>+${t.dmg}%</span></div>
+        <div class="stat-row"><span>보스뎀</span><span>+${t.bossDmg}%</span></div>
+      </div>
+      <div>
+        <div class="stat-row"><span>💰 골드</span><span>${p.gold}</span></div>
+        <div class="stat-row"><span>🧪 큐브/에디</span><span>${state.consumables.cube}/${state.consumables.addCube}</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderLeft() {
+  const c = state.combat;
+  const cm = state.currentMap ? MAPS[state.currentMap] : null;
+  let mapsHtml = '<h2>🗺️ 맵 선택</h2>';
+  for (const id in MAPS) {
+    const m = MAPS[id];
+    const locked = state.player.level < m.reqLevel;
+    const active = state.currentMap === id;
+    const bossTag = m.isBoss ? '<span class="boss-tag">⚠ BOSS</span>' : '';
+    mapsHtml += `<button class="map-btn ${active?'active':''}"
+                  onclick="startHunt('${id}')" ${locked?'disabled':''}>
+                  ${m.name} ${bossTag} <span style="float:right;color:#aaa">Lv.${m.reqLevel}+</span>
+                  <div style="font-size:11px;color:#aaa;">${m.monster} (HP${m.mHp} 공${m.mAtk})</div>
+                </button>`;
+  }
+
+  let combatHtml = '';
+  if (cm) {
+    const mpct = c.monsterMaxHp > 0 ? (c.monsterHp / c.monsterMaxHp * 100) : 0;
+    combatHtml = `
+      <h3>⚔️ 전투 중</h3>
+      <div style="font-size:12px;">${cm.monster}${cm.isBoss?' 👹':''}</div>
+      <div class="mon-bar"><div style="width:${Math.max(0,mpct)}%"></div></div>
+      <div style="font-size:11px;">${Math.max(0,c.monsterHp)} / ${c.monsterMaxHp}</div>
+      <div style="font-size:11px; color:#aaa;">처치: ${c.kills}</div>
+      <button class="danger" onclick="stopHunt()">사냥 중단</button>
+    `;
+  }
+
+  let matsHtml = '<h3>📦 재료</h3>';
+  for (const m in MATERIALS) {
+    matsHtml += `<div class="mat-row"><span>${MATERIALS[m].name}</span><span>${state.materials[m]||0}</span></div>`;
+  }
+
+  let flamesHtml = '<h3>🔥 불꽃</h3>';
+  for (const ft of FLAME_TYPES) {
+    flamesHtml += `<div class="mat-row"><span style="color:${FLAME_COLORS[ft]}">${FLAME_NAMES[ft]}</span><span>${state.consumables['flame_'+ft]}</span></div>`;
+  }
+
+  document.getElementById('leftPanel').innerHTML = mapsHtml + combatHtml + matsHtml + flamesHtml;
+}
+
+function gradeBadge(grade) {
+  return `<span class="grade-label" style="background:${GRADE_COLORS[grade]};">${GRADE_NAMES[grade]}</span>`;
+}
+
+function renderPotentialLine(slots, grade) {
+  const lines = slots.map(p => p ? statLabel(p) : '<span style="color:#666">---</span>').join(' · ');
+  return `${gradeBadge(grade)}${lines}`;
+}
+
+function itemCardHtml(item, equipped) {
+  const t = ITEM_TEMPLATES[item.templateId];
+  const enh = item.enhanceLevel > 0 ? ` +${item.enhanceLevel}` : '';
+  const realAtk = Math.floor(item.baseAtk * (1 + item.enhanceLevel * 0.2));
+  const realDef = Math.floor(item.baseDef * (1 + item.enhanceLevel * 0.2));
+  const baseStr = [
+    item.baseAtk > 0 ? `공격 +${realAtk}` : '',
+    item.baseDef > 0 ? `방어 +${realDef}` : '',
+  ].filter(x=>x).join(' / ');
+  const optStr = item.options.map(statLabel).join(', ') || '없음';
+
+  // 보더 색상 = 최고 등급 (잠재/에디 중)
+  const gradeIdx = Math.max(
+    GRADES.indexOf(item.potentialGrade),
+    GRADES.indexOf(item.addPotentialGrade),
+  );
+  const hasPot = item.potentials.some(x => x) || item.addPotentials.some(x => x);
+  const borderColor = hasPot ? GRADE_COLORS[GRADES[gradeIdx]] : '#555';
+
+  const cost = enhanceCost(item.enhanceLevel);
+  const flameLine = item.flame
+    ? `<div class="item-flame">🔥 [${FLAME_NAMES[item.flameType]}] ${item.flame.map(statLabel).join(', ')}</div>`
+    : '';
+
+  let actions = '';
+  if (equipped) actions += `<button onclick="unequip('${item.slot}')">해제</button>`;
+  else          actions += `<button class="primary" onclick="equip('${item.uid}')">장착</button>`;
+  if (item.enhanceLevel < MAX_ENHANCE) {
+    actions += `<button class="gold" onclick="enhance('${item.uid}')" ${state.player.gold<cost?'disabled':''}>강화 (${cost}G)</button>`;
+  }
+  actions += `<button onclick="applyCube('${item.uid}',false)" ${state.consumables.cube<=0?'disabled':''}>🧪 큐브 (${state.consumables.cube})</button>`;
+  actions += `<button onclick="applyCube('${item.uid}',true)" ${state.consumables.addCube<=0?'disabled':''}>🧪 에디 (${state.consumables.addCube})</button>`;
+  for (const ft of FLAME_TYPES) {
+    const cnt = state.consumables['flame_'+ft];
+    const initial = { small:'작', master:'명', eternal:'영', powerful:'강' }[ft];
+    actions += `<button class="flame" onclick="useFlame('${item.uid}','${ft}')" ${cnt<=0?'disabled':''} title="${FLAME_NAMES[ft]}">🔥${initial}(${cnt})</button>`;
+  }
+  actions += `<button class="danger" onclick="sellItem('${item.uid}')">판매 ${getSellPrice(item)}G</button>`;
+
+  return `
+    <div class="item-card ${equipped?'equipped':''}" style="border-color:${borderColor};">
+      <div><span class="item-name">${t.name}${enh}</span> <span class="item-slot">[${t.slot}]</span></div>
+      <div class="item-line">${baseStr}</div>
+      <div class="item-opt">옵션: ${optStr}</div>
+      <div class="item-pot">잠재 ${renderPotentialLine(item.potentials, item.potentialGrade)}</div>
+      <div class="item-pot">에디 ${renderPotentialLine(item.addPotentials, item.addPotentialGrade)}</div>
+      ${flameLine}
+      <div class="item-actions">${actions}</div>
+    </div>
+  `;
+}
+
+function renderCenter() {
+  let html = '<h2>🛡️ 장착</h2>';
+  for (const slot of ['weapon','armor','accessory']) {
+    const it = state.equipment[slot];
+    if (it) html += itemCardHtml(it, true);
+    else html += `<div class="empty">${slot} 슬롯 비어있음</div>`;
+  }
+  html += `<h2>🎒 인벤토리 (${state.inventory.length})</h2>`;
+  if (state.inventory.length === 0) html += '<div class="empty">아이템 없음</div>';
+  for (const it of state.inventory) html += itemCardHtml(it, false);
+  document.getElementById('centerPanel').innerHTML = html;
+}
+
+function renderRight() {
+  const tab = state.activeTab;
+  let html = `
+    <div class="tabs">
+      <button class="${tab==='craft'?'active':''}" onclick="setTab('craft')">🔨 제작</button>
+      <button class="${tab==='shop'?'active':''}" onclick="setTab('shop')">🏪 상점</button>
+      <button class="${tab==='info'?'active':''}" onclick="setTab('info')">📖 안내</button>
+    </div>
+  `;
+  if (tab === 'craft')      html += renderCraftTab();
+  else if (tab === 'shop')  html += renderShopTab();
+  else if (tab === 'info')  html += renderInfoTab();
+  document.getElementById('rightPanel').innerHTML = html;
+}
+
+function renderCraftTab() {
+  let html = '';
+  for (const id in ITEM_TEMPLATES) {
+    const t = ITEM_TEMPLATES[id];
+    const ok = canCraft(id);
+    const recipeStr = Object.entries(t.recipe).map(([m,q]) => {
+      const have = state.materials[m] || 0;
+      const cls = have >= q ? '' : 'lack';
+      return `<span class="recipe-mat ${cls}">${MATERIALS[m].name} ${have}/${q}</span>`;
+    }).join(', ');
+    html += `
+      <div class="recipe-card">
+        <div><span class="recipe-name">${t.name}</span>
+             <span style="font-size:11px;color:#88ccff;">[${t.slot} T${t.tier}]</span></div>
+        <div style="font-size:11px;color:#ccc;">기본 공${t.baseAtk} 방${t.baseDef} / 옵션 ${t.tier}~${t.tier+1}개</div>
+        <div style="font-size:11px;margin:3px 0;">${recipeStr}</div>
+        <button class="success" onclick="craft('${id}')" ${ok?'':'disabled'}>제작</button>
+      </div>
+    `;
+  }
+  return html;
+}
+
+function renderShopTab() {
+  let html = '<h3>🧪 큐브</h3>';
+  html += `
+    <div class="recipe-card">
+      <div class="recipe-name">잠재 큐브 (메인 3슬롯)</div>
+      <div style="font-size:11px;color:#ccc;">잠재옵션 리롤. 등급 상승 확률 포함 (레→에 10% / 에→유 5% / 유→레전 1%)</div>
+      <div style="margin-top:4px;">
+        <button class="primary" onclick="buyCube(1)" ${state.player.gold<PRICE_CUBE?'disabled':''}>1개 (${PRICE_CUBE}G)</button>
+        <button class="primary" onclick="buyCube(10)" ${state.player.gold<PRICE_CUBE*10?'disabled':''}>10개 (${PRICE_CUBE*10}G)</button>
+      </div>
+    </div>
+    <div class="recipe-card">
+      <div class="recipe-name">에디셔널 큐브</div>
+      <div style="font-size:11px;color:#ccc;">에디셔널 잠재(별도 3슬롯) 리롤</div>
+      <div style="margin-top:4px;">
+        <button class="primary" onclick="buyAddCube(1)" ${state.player.gold<PRICE_ADD_CUBE?'disabled':''}>1개 (${PRICE_ADD_CUBE}G)</button>
+        <button class="primary" onclick="buyAddCube(10)" ${state.player.gold<PRICE_ADD_CUBE*10?'disabled':''}>10개 (${PRICE_ADD_CUBE*10}G)</button>
+      </div>
+    </div>
+  `;
+
+  html += '<h3>🔥 환생의 불꽃</h3>';
+  for (const ft of FLAME_TYPES) {
+    const price = FLAME_PRICES[ft];
+    html += `
+      <div class="recipe-card">
+        <div class="recipe-name" style="color:${FLAME_COLORS[ft]}">${FLAME_NAMES[ft]}</div>
+        <div style="font-size:11px;color:#ccc;">보유 ${state.consumables['flame_'+ft]}개 · 사용 시 4줄 보너스 스탯 부여</div>
+        <button class="flame" onclick="buyFlame('${ft}',1)" ${state.player.gold<price?'disabled':''}>구매 (${price}G)</button>
+      </div>
+    `;
+  }
+
+  html += '<h3>💰 재료 판매</h3>';
+  for (const m in MATERIALS) {
+    const have = state.materials[m] || 0;
+    const price = MATERIALS[m].sellPrice;
+    html += `
+      <div class="recipe-card" style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div class="recipe-name" style="font-size:12px;">${MATERIALS[m].name}</div>
+          <div style="font-size:11px;color:#aaa;">보유 ${have} · 개당 ${price}G</div>
+        </div>
+        <div>
+          <button onclick="sellMaterial('${m}',1)"  ${have<1?'disabled':''}>1</button>
+          <button onclick="sellMaterial('${m}',10)" ${have<10?'disabled':''}>10</button>
+          <button onclick="sellMaterial('${m}',9999)" ${have<1?'disabled':''}>전부</button>
+        </div>
+      </div>
+    `;
+  }
+  return html;
+}
+
+function renderInfoTab() {
+  return `
+    <h3>📘 강화 시스템 안내</h3>
+    <div class="recipe-card">
+      <div class="recipe-name">옵션</div>
+      <div style="font-size:11px;color:#ccc;">제작 시 티어 기반으로 1~4개 랜덤 부여. 변경 불가.</div>
+    </div>
+    <div class="recipe-card">
+      <div class="recipe-name">잠재능력 (3슬롯)</div>
+      <div style="font-size:11px;color:#ccc;">큐브로 리롤. 등급 상승 시 더 강한 옵션 풀.<br>
+        ${gradeBadge('rare')} 기본 수치 / ${gradeBadge('epic')} % 옵션<br>
+        ${gradeBadge('unique')} 보스뎀 진입 / ${gradeBadge('legendary')} 데미지% 등 최상위</div>
+    </div>
+    <div class="recipe-card">
+      <div class="recipe-name">에디셔널 잠재 (3슬롯)</div>
+      <div style="font-size:11px;color:#ccc;">별도 슬롯, 메인 잠재와 함께 적용. 에디셔널 큐브로 리롤.</div>
+    </div>
+    <div class="recipe-card">
+      <div class="recipe-name">환생의 불꽃 (4줄)</div>
+      <div style="font-size:11px;color:#ccc;">아이템에 4줄 보너스 스탯 부여. 4종 등급:<br>
+        <span style="color:${FLAME_COLORS.small}">작은</span> /
+        <span style="color:${FLAME_COLORS.master}">명장의</span> /
+        <span style="color:${FLAME_COLORS.eternal}">영원한</span> /
+        <span style="color:${FLAME_COLORS.powerful}">강력한</span><br>
+        ※ 강력한 불꽃은 광산 동굴 보스에서 0.5% 드랍</div>
+    </div>
+    <div class="recipe-card">
+      <div class="recipe-name">강화 (+0 ~ +10)</div>
+      <div style="font-size:11px;color:#ccc;">기본 스탯에 단계당 +20%. 6강부터 실패 시 단계 하락, 파괴 확률.</div>
+    </div>
+    <div class="recipe-card">
+      <div class="recipe-name">보스뎀 / 데미지</div>
+      <div style="font-size:11px;color:#ccc;">보스뎀은 ⚠BOSS 맵에서만 적용. 데미지는 모든 공격에 곱연산.</div>
+    </div>
+  `;
+}
+
+function setTab(t) { state.activeTab = t; render(); }
+
+function renderLog() {
+  document.getElementById('logContent').innerHTML =
+    state.log.map(e => `<div class="log-line ${e.cls}">${e.msg}</div>`).join('');
+}
+
+function render() {
+  renderPlayer();
+  renderLeft();
+  renderCenter();
+  renderRight();
+  renderLog();
+}
+
+/* =========================================================================
+   초기화
+   ========================================================================= */
+
+state.player.hp = getTotals().maxHp;
+log('게임 시작! 우측 [안내] 탭에서 강화 시스템 설명을 확인하세요.', 'win');
+render();
+</script>
+
+</body>
+</html>

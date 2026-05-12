@@ -4,24 +4,27 @@
 <meta charset="UTF-8">
 <title>메이플식 자동사냥 RPG</title>
 <style>
+  :root { --speed: 1; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: 'Malgun Gothic', sans-serif;
-    background: #1a1a2e;
+    background: #0d0d1a;
     color: #eee;
-    padding: 10px;
+    padding: 8px;
     font-size: 13px;
+    min-height: 100vh;
   }
-  h1 { font-size: 18px; margin-bottom: 8px; color: #ffcc66; }
+  h1 { font-size: 18px; margin-bottom: 8px; color: #ffcc66; text-align: center;
+       text-shadow: 0 0 10px rgba(255,204,102,0.4); }
   h2 { font-size: 14px; margin-bottom: 6px; color: #88ccff; border-bottom: 1px solid #444; padding-bottom: 3px; }
   h3 { font-size: 13px; margin: 8px 0 4px; color: #ffaa88; }
 
   .layout {
     display: grid;
     grid-template-columns: 1fr 1.6fr 1.3fr;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto auto 1fr auto;
     gap: 8px;
-    height: calc(100vh - 50px);
+    min-height: calc(100vh - 50px);
   }
   .panel {
     background: #2a2a44;
@@ -30,23 +33,331 @@
     padding: 10px;
     overflow-y: auto;
   }
-  .top    { grid-column: 1 / 4; }
-  .left   { grid-column: 1; }
-  .center { grid-column: 2; }
-  .right  { grid-column: 3; }
-  .bottom { grid-column: 1 / 4; max-height: 130px; }
+  .top    { grid-column: 1 / 4; grid-row: 1; }
+  .scene-row { grid-column: 1 / 4; grid-row: 2; padding: 0; overflow: hidden; }
+  .left   { grid-column: 1; grid-row: 3; max-height: 440px; }
+  .center { grid-column: 2; grid-row: 3; max-height: 440px; }
+  .right  { grid-column: 3; grid-row: 3; max-height: 440px; }
+  .bottom { grid-column: 1 / 4; grid-row: 4; max-height: 120px; }
 
+  /* ===== SCENE ===== */
+  .scene {
+    position: relative;
+    height: 280px;
+    border: 2px solid #444;
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #87CEEB 0%, #FFE4B5 65%, #228B22 65%, #1a5a14 100%);
+  }
+  .scene.town    { background: linear-gradient(180deg, #87CEEB 0%, #FFE4B5 65%, #5fb84a 65%, #2d6b1f 100%); }
+  .scene.meadow  { background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 55%, #90EE90 55%, #4a7a2a 100%); }
+  .scene.forest  { background: linear-gradient(180deg, #2a3a4a 0%, #1a2a1a 50%, #0d2010 50%, #050d05 100%); }
+  .scene.cave    { background: radial-gradient(ellipse at center top, #4a2244 0%, #1a0820 50%, #0a0410 100%); }
+
+  /* 스킬 발동 시 화면 플래시 */
+  .scene.skill-flash::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(255,235,150,0.5), transparent 70%);
+    animation: skill-flash calc(0.4s / var(--speed)) ease-out;
+    z-index: 30;
+  }
+  @keyframes skill-flash {
+    0%   { opacity: 0; }
+    30%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  .prop {
+    position: absolute;
+    user-select: none;
+    pointer-events: none;
+    filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.4));
+  }
+  .cloud {
+    position: absolute;
+    font-size: 40px;
+    opacity: 0.85;
+    animation: cloud-drift 60s linear infinite;
+  }
+  @keyframes cloud-drift {
+    from { transform: translateX(-100px); }
+    to   { transform: translateX(120vw); }
+  }
+  .torch { animation: flicker 1.2s ease-in-out infinite; }
+  @keyframes flicker {
+    0%,100% { opacity: 1; filter: drop-shadow(0 0 8px #ff7); }
+    50%     { opacity: 0.7; filter: drop-shadow(0 0 14px #fb3); }
+  }
+  .scene.cave .prop { filter: drop-shadow(0 0 6px rgba(255,150,80,0.3)); }
+
+  .scene-label {
+    position: absolute;
+    top: 8px; left: 10px;
+    background: rgba(0,0,0,0.5);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: #fff;
+    font-size: 13px;
+    z-index: 20;
+  }
+  .scene-info {
+    position: absolute;
+    top: 36px; left: 10px;
+    background: rgba(0,0,0,0.4);
+    padding: 2px 8px;
+    border-radius: 4px;
+    color: #ffcc66;
+    font-size: 11px;
+    z-index: 20;
+  }
+
+  /* 속도 토글 */
+  .speed-toggle {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    z-index: 21;
+    display: flex;
+    gap: 0;
+    background: rgba(0,0,0,0.55);
+    border-radius: 4px;
+    padding: 2px;
+  }
+  .speed-toggle button {
+    margin: 0;
+    font-size: 11px;
+    padding: 3px 8px;
+    background: transparent;
+    border: 1px solid #555;
+    color: #ddd;
+    border-radius: 3px;
+  }
+  .speed-toggle button.active {
+    background: #5a4a8e;
+    border-color: #aa88ff;
+    color: #fff;
+    font-weight: bold;
+  }
+
+  /* 콤보 카운터 */
+  .combo-counter {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.65);
+    padding: 4px 14px;
+    border-radius: 18px;
+    font-weight: bold;
+    color: #ffcc44;
+    text-shadow: 0 0 8px #fb3, 1px 1px 0 #000;
+    z-index: 20;
+    border: 2px solid #fb3;
+    display: none;
+    font-size: 16px;
+  }
+  .combo-counter.show { display: block; }
+  .combo-counter.tier2 { color:#ff88ff; border-color:#f8f; text-shadow:0 0 8px #f8f; font-size:18px; }
+  .combo-counter.tier3 { color:#88ffff; border-color:#8ff; text-shadow:0 0 12px #8ff; font-size:20px; }
+  .combo-counter.tier4 { color:#ff4488; border-color:#f48; text-shadow:0 0 16px #f48; font-size:24px; }
+  .combo-counter.popped { animation: combo-pop calc(0.3s / var(--speed)); }
+  @keyframes combo-pop {
+    0%   { transform: translateX(-50%) scale(1); }
+    40%  { transform: translateX(-50%) scale(1.4); }
+    100% { transform: translateX(-50%) scale(1); }
+  }
+  .combo-bonus { font-size: 10px; color:#aaa; }
+
+  /* 스킬 쿨다운 게이지 (씬 하단) */
+  .skill-bar {
+    position: absolute;
+    bottom: 4px; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 6px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 3px;
+    overflow: hidden;
+    z-index: 20;
+    display: none;
+  }
+  .skill-bar.show { display: block; }
+  .skill-bar > div {
+    height: 100%;
+    background: linear-gradient(90deg, #ffaa44, #ff4444);
+    transition: width 0.15s linear;
+  }
+  .skill-bar-label {
+    position: absolute;
+    bottom: 12px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px; color: #ffcc66;
+    z-index: 20;
+    text-shadow: 1px 1px 0 #000;
+  }
+
+  /* ===== 액터 ===== */
+  .actor {
+    position: absolute;
+    bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 5;
+  }
+  .hero    { left: 22%; transform: translateX(-50%); }
+  .monster { right: 22%; transform: translateX(50%); display: none; }
+  .monster.show { display: flex; }
+
+  .actor-name {
+    font-size: 11px;
+    color: #fff;
+    text-shadow: 1px 1px 2px #000, -1px -1px 2px #000;
+    margin-bottom: 2px;
+    font-weight: bold;
+  }
+  .actor-bar {
+    width: 70px;
+    height: 7px;
+    background: #000;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .actor-bar > div {
+    height: 100%;
+    background: linear-gradient(90deg, #ff4444, #ff8866);
+    transition: width 0.3s ease-out;
+  }
+  .monster .actor-bar > div {
+    background: linear-gradient(90deg, #aa44ff, #ff66aa);
+  }
+
+  .actor-emoji {
+    font-size: 60px;
+    line-height: 1;
+    filter: drop-shadow(3px 3px 5px rgba(0,0,0,0.7));
+    animation: idle-bob 2.2s ease-in-out infinite;
+    transform-origin: center bottom;
+  }
+  @keyframes idle-bob {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-4px); }
+  }
+
+  .actor::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    width: 50px;
+    height: 12px;
+    background: radial-gradient(ellipse, rgba(0,0,0,0.5), transparent 70%);
+    z-index: -1;
+  }
+
+  .hero.attacking    .actor-emoji { animation: hero-attack calc(0.4s / var(--speed)) ease-out; }
+  .hero.skill        .actor-emoji { animation: hero-skill calc(0.5s / var(--speed)) ease-out; }
+  .monster.attacking .actor-emoji { animation: monster-attack calc(0.4s / var(--speed)) ease-out; }
+  .hero.hurt    .actor-emoji { animation: hero-hurt calc(0.35s / var(--speed)) ease-out; }
+  .monster.hurt .actor-emoji { animation: monster-hurt calc(0.35s / var(--speed)) ease-out; }
+  .monster.dying .actor-emoji { animation: monster-die calc(0.6s / var(--speed)) ease-in forwards; }
+
+  @keyframes hero-attack {
+    0%   { transform: translateX(0) rotate(0); }
+    30%  { transform: translateX(50px) rotate(15deg) scale(1.1); }
+    60%  { transform: translateX(70px) rotate(-5deg); }
+    100% { transform: translateX(0) rotate(0); }
+  }
+  @keyframes hero-skill {
+    0%   { transform: translateX(0) rotate(0) scale(1); }
+    20%  { transform: translateX(-15px) scale(1.15); }
+    50%  { transform: translateX(90px) rotate(25deg) scale(1.4); filter: drop-shadow(0 0 18px #ffeb3b); }
+    80%  { transform: translateX(70px) rotate(-15deg) scale(1.2); }
+    100% { transform: translateX(0) rotate(0) scale(1); }
+  }
+  @keyframes monster-attack {
+    0%   { transform: translateX(0) rotate(0); }
+    30%  { transform: translateX(-50px) rotate(-15deg) scale(1.1); }
+    60%  { transform: translateX(-70px) rotate(5deg); }
+    100% { transform: translateX(0) rotate(0); }
+  }
+  @keyframes hero-hurt {
+    0%,100% { transform: translateX(0); filter: drop-shadow(3px 3px 5px #000); }
+    25%     { transform: translateX(-15px); filter: drop-shadow(0 0 12px #f44) brightness(1.8); }
+    50%     { transform: translateX(5px); }
+  }
+  @keyframes monster-hurt {
+    0%,100% { transform: translateX(0); filter: drop-shadow(3px 3px 5px #000); }
+    25%     { transform: translateX(15px); filter: drop-shadow(0 0 12px #ff4) brightness(2); }
+    50%     { transform: translateX(-5px); }
+  }
+  @keyframes monster-die {
+    0%   { transform: scale(1) rotate(0); opacity: 1; }
+    100% { transform: scale(0.2) rotate(720deg); opacity: 0; }
+  }
+
+  /* 데미지 / 슬래시 / 빅슬래시 */
+  .effects { position: absolute; inset: 0; pointer-events: none; z-index: 15; }
+  .dmg-num {
+    position: absolute;
+    font-weight: bold;
+    font-size: 22px;
+    color: #ffeb3b;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
+    animation: dmg-float calc(0.9s / var(--speed)) ease-out forwards;
+  }
+  .dmg-num.crit { font-size: 32px; color: #ff3344; text-shadow: 0 0 10px #f88, 2px 2px 0 #000; }
+  .dmg-num.skill { font-size: 38px; color: #ffeb3b; text-shadow: 0 0 14px #fb3, 2px 2px 0 #000; }
+  .dmg-num.player { color: #ff7777; font-size: 18px; }
+  @keyframes dmg-float {
+    0%   { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
+    20%  { transform: translate(-50%, -10px) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -70px) scale(1); opacity: 0; }
+  }
+
+  .slash {
+    position: absolute;
+    font-size: 50px;
+    pointer-events: none;
+    animation: slash-anim calc(0.35s / var(--speed)) ease-out forwards;
+    transform: translate(-50%, -50%);
+    text-shadow: 0 0 8px #fff;
+  }
+  @keyframes slash-anim {
+    0%   { transform: translate(-50%, -50%) scale(0.3) rotate(-60deg); opacity: 0; }
+    40%  { transform: translate(-50%, -50%) scale(1.4) rotate(0deg); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(2.2) rotate(60deg); opacity: 0; }
+  }
+  .big-slash {
+    position: absolute;
+    font-size: 100px;
+    pointer-events: none;
+    animation: big-slash-anim calc(0.6s / var(--speed)) ease-out forwards;
+    transform: translate(-50%, -50%);
+    text-shadow: 0 0 25px #ffeb3b;
+    z-index: 12;
+  }
+  @keyframes big-slash-anim {
+    0%   { transform: translate(-50%, -50%) scale(0.2) rotate(-90deg); opacity: 0; }
+    25%  { transform: translate(-50%, -50%) scale(1.8) rotate(0deg); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(3.5) rotate(90deg); opacity: 0; }
+  }
+
+  /* ===== 사이드 UI ===== */
   .stat-row { display: flex; justify-content: space-between; margin: 2px 0; font-size: 12px; }
   .stat-row span:first-child { color: #aaa; }
   .stat-row span:last-child  { color: #fff; font-weight: bold; }
 
-  .hp-bar, .mon-bar {
+  .hp-bar {
     width: 100%; height: 14px;
     background: #444; border-radius: 3px; overflow: hidden;
     margin: 3px 0;
   }
   .hp-bar > div { height: 100%; background: linear-gradient(90deg, #ff4444, #ff8866); transition: width 0.2s; }
-  .mon-bar > div { height: 100%; background: linear-gradient(90deg, #aa44ff, #ff66aa); transition: width 0.2s; }
 
   button {
     background: #3a3a5e;
@@ -133,6 +444,7 @@
   .log-line.legendary { color: #44ff88; font-weight: bold; }
   .log-line.unique { color: #ffcc44; font-weight: bold; }
   .log-line.epic { color: #cc88ff; }
+  .log-line.skill { color: #ffeb3b; font-weight: bold; }
 
   .empty { color: #666; font-style: italic; font-size: 12px; padding: 8px; text-align: center; }
 
@@ -147,9 +459,48 @@
 
 <div class="layout">
   <div class="panel top" id="playerPanel"></div>
+
+  <div class="panel scene-row">
+    <div class="scene town" id="sceneArea">
+      <div class="scene-label" id="sceneLabel">🏘️ 마을</div>
+      <div class="scene-info" id="sceneInfo"></div>
+
+      <div class="speed-toggle" id="speedToggle">
+        <button class="active" id="spd1" onclick="setSpeed(1)">⏱️ x1</button>
+        <button id="spd2" onclick="setSpeed(2)">x2</button>
+        <button id="spd4" onclick="setSpeed(4)">x4</button>
+      </div>
+
+      <div class="combo-counter" id="comboCounter">
+        콤보 x<span id="comboNum">0</span>
+        <div class="combo-bonus" id="comboBonus"></div>
+      </div>
+
+      <div class="scene-mid" id="sceneMid"></div>
+
+      <div class="actor hero" id="hero">
+        <div class="actor-name">🦸 용사</div>
+        <div class="actor-bar"><div id="heroHpFill" style="width:100%"></div></div>
+        <div class="actor-emoji">🦸</div>
+      </div>
+
+      <div class="actor monster" id="monster">
+        <div class="actor-name" id="monsterName">늑대</div>
+        <div class="actor-bar"><div id="monsterHpFill" style="width:100%"></div></div>
+        <div class="actor-emoji" id="monsterEmoji">🐺</div>
+      </div>
+
+      <div class="effects" id="effects"></div>
+
+      <div class="skill-bar-label" id="skillBarLabel">💢 강타</div>
+      <div class="skill-bar" id="skillBar"><div id="skillBarFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
   <div class="panel left" id="leftPanel"></div>
   <div class="panel center" id="centerPanel"></div>
   <div class="panel right" id="rightPanel"></div>
+
   <div class="panel bottom" id="logPanel">
     <h2>📜 로그</h2>
     <div id="logContent"></div>
@@ -168,17 +519,24 @@ const MATERIALS = {
   magic_dust:  { name: '마력의 가루',  sellPrice: 15 },
 };
 
+/* 밸런스: 초반 1-2방컷, 보상 ↑ */
 const MAPS = {
-  meadow: { id:'meadow', name:'초원', monster:'슬라임', mHp:20, mAtk:3, mDef:0,
-            goldMin:2, goldMax:5, isBoss:false, reqLevel:1, expReward:5,
-            drops:[{matId:'slime_jelly',chance:0.7}] },
-  forest: { id:'forest', name:'숲', monster:'늑대', mHp:60, mAtk:8, mDef:2,
-            goldMin:6, goldMax:12, isBoss:false, reqLevel:3, expReward:15,
-            drops:[{matId:'wolf_fang',chance:0.5},{matId:'slime_jelly',chance:0.2}] },
-  cave:   { id:'cave', name:'광산 동굴', monster:'광물 골렘', mHp:180, mAtk:18, mDef:8,
-            goldMin:15, goldMax:30, isBoss:true, reqLevel:7, expReward:40,
-            drops:[{matId:'iron_ore',chance:0.6},{matId:'magic_dust',chance:0.15},
+  meadow: { id:'meadow', name:'초원', monster:'슬라임', mHp:8, mAtk:2, mDef:0,
+            goldMin:3, goldMax:7, isBoss:false, reqLevel:1, expReward:15,
+            drops:[{matId:'slime_jelly',chance:0.9}] },
+  forest: { id:'forest', name:'어둠의 숲', monster:'늑대', mHp:30, mAtk:6, mDef:2,
+            goldMin:8, goldMax:15, isBoss:false, reqLevel:3, expReward:35,
+            drops:[{matId:'wolf_fang',chance:0.6},{matId:'slime_jelly',chance:0.3}] },
+  cave:   { id:'cave', name:'광산 동굴', monster:'광물 골렘', mHp:100, mAtk:15, mDef:8,
+            goldMin:20, goldMax:40, isBoss:true, reqLevel:7, expReward:80,
+            drops:[{matId:'iron_ore',chance:0.7},{matId:'magic_dust',chance:0.2},
                    {flame:'powerful',chance:0.005}] },
+};
+
+const MONSTER_EMOJIS = {
+  '슬라임': '🟢',
+  '늑대':   '🐺',
+  '광물 골렘': '🗿',
 };
 
 const ITEM_TEMPLATES = {
@@ -191,7 +549,6 @@ const ITEM_TEMPLATES = {
   mythic_amulet: { id:'mythic_amulet', name:'신비의 목걸이',   slot:'accessory', tier:3, baseAtk:5,  baseDef:5,  recipe:{ magic_dust:8, iron_ore:5 } },
 };
 
-// 일반 제작 옵션 (티어와 무관, 적은 효과)
 const OPTION_POOL = [
   { key:'atkFlat',  label:'공격력',  min:1, max:5  },
   { key:'defFlat',  label:'방어력',  min:1, max:5  },
@@ -199,11 +556,6 @@ const OPTION_POOL = [
   { key:'critFlat', label:'크리율',  min:1, max:4  },
 ];
 
-/* 잠재능력 등급별 풀
-   - 레어: 단순 수치
-   - 에픽: % 옵션 등장
-   - 유니크: 더 강한 % + 보스데미지 진입
-   - 레전더리: 데미지 % + 보스데미지 강화 */
 const GRADES = ['rare', 'epic', 'unique', 'legendary'];
 const GRADE_NAMES   = { rare:'레어', epic:'에픽', unique:'유니크', legendary:'레전더리' };
 const GRADE_COLORS  = { rare:'#5a9aff', epic:'#aa55ff', unique:'#ffcc44', legendary:'#44ff88' };
@@ -242,7 +594,6 @@ const POTENTIAL_POOLS = {
   ],
 };
 
-/* 환생의 불꽃 — 4줄 보너스 스탯, 등급별 풀과 수치가 다름 */
 const FLAME_TYPES = ['small','master','eternal','powerful'];
 const FLAME_NAMES = { small:'작은 불꽃', master:'명장의 불꽃', eternal:'영원한 불꽃', powerful:'강력한 불꽃' };
 const FLAME_COLORS = { small:'#aaaaaa', master:'#88ccff', eternal:'#ffcc44', powerful:'#ff6644' };
@@ -284,28 +635,36 @@ const FLAME_POOLS = {
 const FLAME_PRICES = { small:50, master:200, eternal:500, powerful:1500 };
 
 const ENHANCE_TABLE = [
-  { success:0.95, destroy:0    },
-  { success:0.90, destroy:0    },
-  { success:0.85, destroy:0    },
-  { success:0.75, destroy:0    },
-  { success:0.65, destroy:0    },
-  { success:0.55, destroy:0.05 },
-  { success:0.45, destroy:0.10 },
-  { success:0.35, destroy:0.15 },
-  { success:0.25, destroy:0.20 },
-  { success:0.15, destroy:0.30 },
+  { success:0.95, destroy:0    }, { success:0.90, destroy:0    },
+  { success:0.85, destroy:0    }, { success:0.75, destroy:0    },
+  { success:0.65, destroy:0    }, { success:0.55, destroy:0.05 },
+  { success:0.45, destroy:0.10 }, { success:0.35, destroy:0.15 },
+  { success:0.25, destroy:0.20 }, { success:0.15, destroy:0.30 },
 ];
 const MAX_ENHANCE = 10;
 
 const PRICE_CUBE = 100;
 const PRICE_ADD_CUBE = 150;
 
+/* 스킬 설정 */
+const SKILL_PERIOD = 4;       // 4번째 공격마다 강타
+const SKILL_DMG_MULT = 3;     // 3배 데미지
+
+/* 콤보 보너스 — kill 누적 단계별 골드/드랍률 배수 */
+const COMBO_TIERS = [
+  { at: 0,   goldMult: 1.0, dropBonus: 0,    label: '' },
+  { at: 10,  goldMult: 1.2, dropBonus: 0.05, label: '+20% G' },
+  { at: 25,  goldMult: 1.5, dropBonus: 0.10, label: '+50% G · +10% 드랍' },
+  { at: 50,  goldMult: 1.8, dropBonus: 0.15, label: '+80% G · +15% 드랍' },
+  { at: 100, goldMult: 2.5, dropBonus: 0.25, label: '+150% G · +25% 드랍' },
+];
+
 /* =========================================================================
    [B] 상태
    ========================================================================= */
 
 const state = {
-  player: { level:1, exp:0, hp:100, atkBase:5, defBase:2, gold:50 },
+  player: { level:1, exp:0, hp:100, atkBase:8, defBase:3, gold:200 },
   equipment: { weapon:null, armor:null, accessory:null },
   inventory: [],
   materials: { slime_jelly:0, wolf_fang:0, iron_ore:0, magic_dust:0 },
@@ -314,13 +673,14 @@ const state = {
     flame_small:0, flame_master:0, flame_eternal:0, flame_powerful:0,
   },
   currentMap: null,
-  combat: { monsterHp:0, monsterMaxHp:0, kills:0 },
+  combat: { monsterHp:0, monsterMaxHp:0, kills:0, combo:0, skillCounter:0 },
   log: [],
   activeTab: 'craft',
   uidCounter: 1,
 };
 
 let huntInterval = null;
+let speedMultiplier = 1;
 
 /* =========================================================================
    [J] 유틸
@@ -339,10 +699,8 @@ function log(msg, cls='') {
   state.log.unshift({ msg, cls });
   if (state.log.length > 50) state.log.pop();
 }
-
-/* =========================================================================
-   [B-2] 옵션 라벨링 — 모든 스탯 key 통합 처리
-   ========================================================================= */
+function tickIntervalMs() { return 1000 / speedMultiplier; }
+function scaledDelay(ms)  { return ms / speedMultiplier; }
 
 const STAT_LABELS = {
   atkFlat:'공격력', defFlat:'방어력', hpFlat:'HP', critFlat:'크리율',
@@ -363,13 +721,9 @@ function statLabel(opt) {
 
 function getTotals() {
   const p = state.player;
-  let atk = p.atkBase;
-  let def = p.defBase;
-  let hpFlat = 0;
-  let crit = 5;
-  let critDmg = 50;
-  let atkPct = 0, defPct = 0, hpPct = 0;
-  let bossDmg = 0, dmg = 0;
+  let atk = p.atkBase, def = p.defBase;
+  let hpFlat = 0, crit = 5, critDmg = 50;
+  let atkPct = 0, defPct = 0, hpPct = 0, bossDmg = 0, dmg = 0;
 
   function applyOpt(o) {
     if (o.key === 'atkFlat')  atk += o.value;
@@ -397,8 +751,8 @@ function getTotals() {
     if (item.flame) item.flame.forEach(applyOpt);
   }
 
-  atk   = Math.floor(atk * (1 + atkPct/100));
-  def   = Math.floor(def * (1 + defPct/100));
+  atk = Math.floor(atk * (1 + atkPct/100));
+  def = Math.floor(def * (1 + defPct/100));
   const baseHp = 100 + (p.level-1) * 20;
   const maxHp = Math.floor((baseHp + hpFlat) * (1 + hpPct/100));
   return { atk, def, maxHp, crit, critDmg, bossDmg, dmg };
@@ -426,16 +780,11 @@ function rollOptionsForTier(tier) {
 function createItemInstance(templateId) {
   const t = ITEM_TEMPLATES[templateId];
   return {
-    uid: genUid(),
-    templateId,
-    slot: t.slot,
-    baseAtk: t.baseAtk,
-    baseDef: t.baseDef,
+    uid: genUid(), templateId, slot: t.slot,
+    baseAtk: t.baseAtk, baseDef: t.baseDef,
     options: rollOptionsForTier(t.tier),
-    potentials:    [null, null, null],
-    potentialGrade: 'rare',
-    addPotentials: [null, null, null],
-    addPotentialGrade: 'rare',
+    potentials:    [null, null, null], potentialGrade: 'rare',
+    addPotentials: [null, null, null], addPotentialGrade: 'rare',
     flame: null,
     enhanceLevel: 0,
   };
@@ -486,17 +835,15 @@ function enhance(uid) {
       log(`⚠️ 강화 실패 (유지)`, 'fail');
     }
   }
-  clampHp();
-  render();
+  clampHp(); render();
 }
 
 /* =========================================================================
-   [F] 잠재능력 / 에디셔널 잠재능력 (큐브)
+   [F] 잠재 / 에디
    ========================================================================= */
 
 function rollPotentialLines(grade) {
   const pool = POTENTIAL_POOLS[grade];
-  // 슬롯별 채워질 확률 - 메이플처럼 상위 슬롯일수록 안 비어있을 확률 ↑
   const fillChances = [1.0, 0.7, 0.4];
   return fillChances.map(p => {
     if (!rollChance(p)) return null;
@@ -516,7 +863,6 @@ function applyCube(uid, isAdditional) {
   if (state.consumables[stockKey] <= 0) { log(`${cubeName} 부족`, 'fail'); return; }
   state.consumables[stockKey]--;
 
-  // 등급 상승 시도
   const cur = item[gradeKey];
   const up = GRADE_UPGRADE[cur];
   if (up > 0 && rollChance(up)) {
@@ -525,17 +871,11 @@ function applyCube(uid, isAdditional) {
     log(`🌟 등급 상승! ${GRADE_NAMES[cur]} → ${GRADE_NAMES[item[gradeKey]]}`, item[gradeKey]);
   }
 
-  // 잠재옵션 리롤
   item[slotsKey] = rollPotentialLines(item[gradeKey]);
   const filled = item[slotsKey].filter(x => x).length;
   log(`🧪 ${cubeName} 사용 [${GRADE_NAMES[item[gradeKey]]}] ${filled}줄`);
-  clampHp();
-  render();
+  clampHp(); render();
 }
-
-/* =========================================================================
-   [F-2] 환생의 불꽃
-   ========================================================================= */
 
 function rollFlame(flameType) {
   const pool = FLAME_POOLS[flameType];
@@ -556,8 +896,7 @@ function useFlame(uid, flameType) {
   item.flame = rollFlame(flameType);
   item.flameType = flameType;
   log(`🔥 ${FLAME_NAMES[flameType]} 적용`, flameType === 'powerful' ? 'legendary' : '');
-  clampHp();
-  render();
+  clampHp(); render();
 }
 
 /* =========================================================================
@@ -588,16 +927,14 @@ function equip(uid) {
   if (state.equipment[slot]) state.inventory.push(state.equipment[slot]);
   state.equipment[slot] = item;
   log(`🛡️ ${ITEM_TEMPLATES[item.templateId].name} 장착`);
-  clampHp();
-  render();
+  clampHp(); render();
 }
 
 function unequip(slot) {
   if (!state.equipment[slot]) return;
   state.inventory.push(state.equipment[slot]);
   state.equipment[slot] = null;
-  clampHp();
-  render();
+  clampHp(); render();
 }
 
 function getSellPrice(item) {
@@ -607,7 +944,6 @@ function getSellPrice(item) {
   p += item.addPotentials.filter(x => x).reduce((s,x) => s + x.value * 2, 0);
   if (item.flame) p += item.flame.reduce((s,x) => s + x.value * 1.5, 0);
   p += item.enhanceLevel * 25;
-  // 등급 보너스
   p += GRADES.indexOf(item.potentialGrade) * 50;
   p += GRADES.indexOf(item.addPotentialGrade) * 50;
   return Math.max(5, Math.floor(p));
@@ -640,9 +976,7 @@ function sellMaterial(matId, qty) {
 
 function buyCube(qty)    { buyItem('cube', PRICE_CUBE, qty, '잠재 큐브'); }
 function buyAddCube(qty) { buyItem('addCube', PRICE_ADD_CUBE, qty, '에디셔널 큐브'); }
-function buyFlame(type, qty) {
-  buyItem('flame_'+type, FLAME_PRICES[type], qty, FLAME_NAMES[type]);
-}
+function buyFlame(type, qty) { buyItem('flame_'+type, FLAME_PRICES[type], qty, FLAME_NAMES[type]); }
 function buyItem(stockKey, unitPrice, qty, name) {
   const cost = unitPrice * qty;
   if (state.player.gold < cost) { log('골드 부족', 'fail'); return; }
@@ -653,7 +987,204 @@ function buyItem(stockKey, unitPrice, qty, name) {
 }
 
 /* =========================================================================
-   [C-2] 전투/자동사냥
+   [SCENE / 애니메이션]
+   ========================================================================= */
+
+function updateScene() {
+  const scene = document.getElementById('sceneArea');
+  const map = state.currentMap ? MAPS[state.currentMap] : null;
+
+  scene.className = 'scene ' + (map ? map.id : 'town');
+  document.getElementById('sceneLabel').textContent = map ? `📍 ${map.name}` : '🏘️ 마을';
+
+  const monster = document.getElementById('monster');
+  if (map) {
+    monster.classList.add('show');
+    document.getElementById('monsterEmoji').textContent = MONSTER_EMOJIS[map.monster] || '👹';
+    document.getElementById('monsterName').textContent = map.monster + (map.isBoss ? ' 👹' : '');
+    document.getElementById('skillBar').classList.add('show');
+  } else {
+    monster.classList.remove('show');
+    document.getElementById('skillBar').classList.remove('show');
+  }
+
+  document.getElementById('sceneMid').innerHTML = getSceneProps(map);
+  updateSceneBars();
+  updateCombo();
+}
+
+function getSceneProps(map) {
+  if (!map) {
+    return `
+      <div class="cloud" style="top:18px; animation-delay: -10s;">☁️</div>
+      <div class="cloud" style="top:40px; font-size:30px; animation-delay: -40s;">☁️</div>
+      <div class="cloud" style="top:25px; animation-delay: -25s;">☁️</div>
+      <div class="prop" style="left:6%;  bottom:40px; font-size:56px;">🏠</div>
+      <div class="prop" style="left:18%; bottom:45px; font-size:46px;">⛪</div>
+      <div class="prop" style="right:8%; bottom:40px; font-size:56px;">🏪</div>
+      <div class="prop" style="right:24%;bottom:42px; font-size:50px;">🛖</div>
+      <div class="prop" style="left:45%; bottom:50px; font-size:30px;">🌳</div>
+      <div class="prop" style="left:38%; bottom:38px; font-size:24px;">🌷</div>
+      <div class="prop" style="right:38%;bottom:38px; font-size:24px;">🌼</div>
+      <div class="prop" style="left:50%; bottom:40px; font-size:36px; transform:translateX(-50%);">🪧</div>
+    `;
+  }
+  if (map.id === 'meadow') {
+    return `
+      <div class="cloud" style="top:15px; animation-delay: -5s;">☁️</div>
+      <div class="cloud" style="top:35px; animation-delay: -30s;">☁️</div>
+      <div class="prop" style="left:5%;  bottom:25px; font-size:32px;">🌼</div>
+      <div class="prop" style="left:15%; bottom:30px; font-size:28px;">🌸</div>
+      <div class="prop" style="left:40%; bottom:25px; font-size:30px;">🌱</div>
+      <div class="prop" style="right:8%; bottom:30px; font-size:34px;">🌷</div>
+      <div class="prop" style="right:18%;bottom:28px; font-size:26px;">🦋</div>
+      <div class="prop" style="left:60%; bottom:40px; font-size:30px;">🦋</div>
+      <div class="prop" style="left:30%; bottom:50px; font-size:24px; opacity:0.7;">🐝</div>
+    `;
+  }
+  if (map.id === 'forest') {
+    return `
+      <div class="prop" style="left:2%;  bottom:25px; font-size:90px;">🌲</div>
+      <div class="prop" style="left:15%; bottom:25px; font-size:75px;">🌳</div>
+      <div class="prop" style="right:2%; bottom:25px; font-size:90px;">🌲</div>
+      <div class="prop" style="right:15%;bottom:25px; font-size:70px;">🌳</div>
+      <div class="prop" style="left:42%; bottom:30px; font-size:50px; opacity:0.6;">🌲</div>
+      <div class="prop" style="left:55%; bottom:30px; font-size:50px; opacity:0.6;">🌳</div>
+      <div class="prop" style="top:30px; left:40%;  font-size:28px;">🌙</div>
+      <div class="prop" style="top:80px; left:75%;  font-size:18px;">✨</div>
+      <div class="prop" style="top:60px; left:20%;  font-size:18px;">✨</div>
+      <div class="prop" style="left:30%; bottom:35px; font-size:20px;">🍄</div>
+      <div class="prop" style="right:32%;bottom:30px; font-size:22px;">🍄</div>
+    `;
+  }
+  if (map.id === 'cave') {
+    return `
+      <div class="prop torch" style="left:6%;  bottom:30px; font-size:38px;">🔥</div>
+      <div class="prop torch" style="right:6%; bottom:30px; font-size:38px;">🔥</div>
+      <div class="prop" style="left:30%; bottom:35px; font-size:32px;">🪨</div>
+      <div class="prop" style="right:30%;bottom:30px; font-size:34px;">🪨</div>
+      <div class="prop" style="left:50%; bottom:50px; font-size:24px; transform:translateX(-50%);">💎</div>
+      <div class="prop" style="top:18px; left:15%; font-size:26px;">🦇</div>
+      <div class="prop" style="top:30px; right:25%; font-size:22px;">🦇</div>
+      <div class="prop" style="left:42%; bottom:40px; font-size:18px;">💎</div>
+      <div class="prop" style="right:42%;bottom:38px; font-size:18px;">💎</div>
+    `;
+  }
+  return '';
+}
+
+function updateSceneBars() {
+  const t = getTotals();
+  const heroPct = Math.max(0, state.player.hp / t.maxHp * 100);
+  document.getElementById('heroHpFill').style.width = heroPct + '%';
+  if (state.combat.monsterMaxHp > 0) {
+    const mPct = Math.max(0, state.combat.monsterHp / state.combat.monsterMaxHp * 100);
+    document.getElementById('monsterHpFill').style.width = mPct + '%';
+  }
+  document.getElementById('sceneInfo').textContent = state.currentMap ? `처치 ${state.combat.kills}` : '';
+
+  // 스킬 게이지
+  const skillPct = (state.combat.skillCounter / SKILL_PERIOD) * 100;
+  document.getElementById('skillBarFill').style.width = skillPct + '%';
+}
+
+function updateCombo() {
+  const el = document.getElementById('comboCounter');
+  const combo = state.combat.combo;
+  if (combo <= 0 || !state.currentMap) {
+    el.classList.remove('show');
+    return;
+  }
+  el.classList.add('show');
+  el.classList.remove('tier2','tier3','tier4');
+  if (combo >= 100) el.classList.add('tier4');
+  else if (combo >= 50) el.classList.add('tier3');
+  else if (combo >= 25) el.classList.add('tier2');
+
+  document.getElementById('comboNum').textContent = combo;
+  const tier = getComboTier(combo);
+  document.getElementById('comboBonus').textContent = tier.label;
+}
+
+function getComboTier(combo) {
+  let cur = COMBO_TIERS[0];
+  for (const t of COMBO_TIERS) if (combo >= t.at) cur = t;
+  return cur;
+}
+
+function triggerActorAnim(id, animClass, durationMs) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove(animClass);
+  void el.offsetWidth;
+  el.classList.add(animClass);
+  setTimeout(() => el.classList.remove(animClass), durationMs);
+}
+
+function spawnDamageNumber(dmg, target, opts={}) {
+  const div = document.createElement('div');
+  let cls = 'dmg-num';
+  if (opts.crit)  cls += ' crit';
+  if (opts.skill) cls += ' skill';
+  if (target === 'hero') cls += ' player';
+  div.className = cls;
+  div.textContent = (opts.skill ? '💢 ' : (opts.crit ? '💥 ' : '')) + dmg;
+  const baseX = target === 'monster' ? 78 : 22;
+  div.style.left = (baseX - 4 + Math.random() * 8) + '%';
+  div.style.top = (38 + Math.random() * 8) + '%';
+  document.getElementById('effects').appendChild(div);
+  setTimeout(() => div.remove(), scaledDelay(950));
+}
+
+function spawnSlash(big=false) {
+  const div = document.createElement('div');
+  if (big) {
+    div.className = 'big-slash';
+    div.textContent = '💥';
+  } else {
+    div.className = 'slash';
+    div.textContent = ['✦','⚡','✸'][rand(0,2)];
+  }
+  div.style.left = (big ? 62 : 60 + Math.random() * 10) + '%';
+  div.style.top = (big ? 45 : 40 + Math.random() * 10) + '%';
+  document.getElementById('effects').appendChild(div);
+  setTimeout(() => div.remove(), scaledDelay(big ? 600 : 380));
+}
+
+function flashScreen() {
+  const scene = document.getElementById('sceneArea');
+  scene.classList.remove('skill-flash');
+  void scene.offsetWidth;
+  scene.classList.add('skill-flash');
+  setTimeout(() => scene.classList.remove('skill-flash'), scaledDelay(400));
+}
+
+function popCombo() {
+  const el = document.getElementById('comboCounter');
+  el.classList.remove('popped');
+  void el.offsetWidth;
+  el.classList.add('popped');
+  setTimeout(() => el.classList.remove('popped'), scaledDelay(300));
+}
+
+/* =========================================================================
+   [속도 토글]
+   ========================================================================= */
+
+function setSpeed(s) {
+  speedMultiplier = s;
+  document.documentElement.style.setProperty('--speed', s);
+  for (const id of ['spd1','spd2','spd4']) document.getElementById(id).classList.remove('active');
+  document.getElementById('spd' + s).classList.add('active');
+  if (huntInterval) {
+    clearInterval(huntInterval);
+    huntInterval = setInterval(tick, tickIntervalMs());
+  }
+  log(`⏱️ 속도 x${s}`);
+}
+
+/* =========================================================================
+   [전투/자동사냥]
    ========================================================================= */
 
 function startHunt(mapId) {
@@ -663,9 +1194,12 @@ function startHunt(mapId) {
   state.combat.monsterHp = 0;
   state.combat.monsterMaxHp = map.mHp;
   state.combat.kills = 0;
+  state.combat.combo = 0;
+  state.combat.skillCounter = 0;
   if (huntInterval) clearInterval(huntInterval);
-  huntInterval = setInterval(tick, 1000);
+  huntInterval = setInterval(tick, tickIntervalMs());
   log(`🗺️ ${map.name} 사냥 시작`);
+  updateScene();
   render();
 }
 
@@ -673,8 +1207,11 @@ function stopHunt() {
   if (huntInterval) { clearInterval(huntInterval); huntInterval = null; }
   state.currentMap = null;
   state.combat.monsterHp = 0;
+  state.combat.combo = 0;
+  state.combat.skillCounter = 0;
   state.player.hp = getTotals().maxHp;
-  log('사냥 중단 (HP 회복)');
+  log('🏘️ 마을로 귀환 (HP 회복)');
+  updateScene();
   render();
 }
 
@@ -686,6 +1223,22 @@ function tick() {
   if (state.combat.monsterHp <= 0) {
     state.combat.monsterHp = map.mHp;
     state.combat.monsterMaxHp = map.mHp;
+    document.getElementById('monster').classList.add('show');
+    document.getElementById('monsterEmoji').textContent = MONSTER_EMOJIS[map.monster] || '👹';
+  }
+
+  // 스킬 카운터 증가, SKILL_PERIOD 도달 시 강타 발동
+  state.combat.skillCounter++;
+  const useSkill = state.combat.skillCounter >= SKILL_PERIOD;
+  if (useSkill) state.combat.skillCounter = 0;
+
+  if (useSkill) {
+    triggerActorAnim('hero', 'skill', scaledDelay(500));
+    spawnSlash(true);
+    flashScreen();
+  } else {
+    triggerActorAnim('hero', 'attacking', scaledDelay(400));
+    spawnSlash(false);
   }
 
   const isCrit = rollChance(totals.crit / 100);
@@ -693,30 +1246,53 @@ function tick() {
   if (isCrit) dmg = Math.floor(dmg * (1 + totals.critDmg/100));
   dmg = Math.floor(dmg * (1 + totals.dmg/100));
   if (map.isBoss) dmg = Math.floor(dmg * (1 + totals.bossDmg/100));
+  if (useSkill) dmg = Math.floor(dmg * SKILL_DMG_MULT);
+
   state.combat.monsterHp -= dmg;
-  if (isCrit) log(`💥 크리티컬! ${dmg} 데미지`, 'crit');
+  spawnDamageNumber(dmg, 'monster', { crit:isCrit, skill:useSkill });
+  triggerActorAnim('monster', 'hurt', scaledDelay(350));
+  if (useSkill) log(`💢 강타! ${dmg} 데미지`, 'skill');
+  else if (isCrit) log(`💥 크리티컬! ${dmg} 데미지`, 'crit');
+
+  updateSceneBars();
 
   if (state.combat.monsterHp <= 0) {
-    onMonsterKill(map);
+    triggerActorAnim('monster', 'dying', scaledDelay(600));
+    setTimeout(() => onMonsterKill(map), scaledDelay(300));
   } else {
-    const mDmg = Math.max(1, map.mAtk - totals.def);
-    state.player.hp -= mDmg;
-    if (state.player.hp <= 0) {
-      onPlayerDeath();
-      return;
-    }
+    // 몬스터 반격: tick interval의 40% 시점
+    setTimeout(() => {
+      if (!state.currentMap) return;
+      triggerActorAnim('monster', 'attacking', scaledDelay(400));
+      const mDmg = Math.max(1, map.mAtk - totals.def);
+      state.player.hp -= mDmg;
+      spawnDamageNumber(mDmg, 'hero', {});
+      triggerActorAnim('hero', 'hurt', scaledDelay(350));
+      updateSceneBars();
+      renderPlayer();
+      if (state.player.hp <= 0) onPlayerDeath();
+    }, tickIntervalMs() * 0.4);
   }
-  render();
+  renderPlayer();
 }
 
 function onMonsterKill(map) {
   state.combat.kills++;
-  const gold = rand(map.goldMin, map.goldMax);
-  state.player.gold += gold;
-  log(`⚔️ ${map.monster} 처치 +${gold}G`, 'gold');
+  state.combat.combo++;
+  popCombo();
 
+  const tier = getComboTier(state.combat.combo);
+
+  // 골드 (콤보 배수 적용)
+  let gold = rand(map.goldMin, map.goldMax);
+  gold = Math.floor(gold * tier.goldMult);
+  state.player.gold += gold;
+  log(`⚔️ ${map.monster} 처치 +${gold}G${tier.goldMult>1?` (콤보 x${(tier.goldMult).toFixed(1)})`:''}`, 'gold');
+
+  // 드랍 (콤보 드랍보너스 적용)
   for (const drop of map.drops) {
-    if (!rollChance(drop.chance)) continue;
+    const chance = drop.chance + tier.dropBonus;
+    if (!rollChance(chance)) continue;
     if (drop.matId) {
       state.materials[drop.matId] = (state.materials[drop.matId]||0) + 1;
       log(`📦 ${MATERIALS[drop.matId].name} 획득`, 'drop');
@@ -726,15 +1302,23 @@ function onMonsterKill(map) {
     }
   }
 
+  // 콤보 마일스톤 알림
+  if ([10, 25, 50, 100].includes(state.combat.combo)) {
+    log(`🔥 ${state.combat.combo} 콤보 달성! ${tier.label}`, 'win');
+  }
+
   gainExp(map.expReward);
   state.combat.monsterHp = 0;
+  updateCombo();
+  render();
 }
 
 function onPlayerDeath() {
   const lost = Math.floor(state.player.gold * 0.1);
   state.player.gold -= lost;
   state.player.hp = getTotals().maxHp;
-  log(`💀 사망! ${lost}G 잃음`, 'fail');
+  log(`💀 사망! ${lost}G 잃음 (콤보 초기화)`, 'fail');
+  state.combat.combo = 0;
   stopHunt();
 }
 
@@ -750,10 +1334,11 @@ function gainExp(amt) {
   }
 }
 
-function expForLevel(lv) { return lv * 50; }
+/* 완화된 곡선: lv * 30 */
+function expForLevel(lv) { return lv * 30; }
 
 /* =========================================================================
-   [I] 렌더링
+   [I] 사이드 패널 렌더링
    ========================================================================= */
 
 function renderPlayer() {
@@ -763,7 +1348,7 @@ function renderPlayer() {
   document.getElementById('playerPanel').innerHTML = `
     <div style="display:grid; grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr; gap:14px; align-items:center;">
       <div>
-        <div style="font-size:15px; color:#ffcc66; margin-bottom:3px;">🧙 Lv.${p.level} 모험가</div>
+        <div style="font-size:15px; color:#ffcc66; margin-bottom:3px;">🦸 Lv.${p.level} 용사</div>
         <div class="hp-bar"><div style="width:${hpPct}%"></div></div>
         <div style="font-size:11px;">HP ${p.hp} / ${t.maxHp}</div>
         <div style="font-size:11px; color:#aaa;">EXP ${p.exp} / ${expForLevel(p.level)}</div>
@@ -789,8 +1374,6 @@ function renderPlayer() {
 }
 
 function renderLeft() {
-  const c = state.combat;
-  const cm = state.currentMap ? MAPS[state.currentMap] : null;
   let mapsHtml = '<h2>🗺️ 맵 선택</h2>';
   for (const id in MAPS) {
     const m = MAPS[id];
@@ -800,21 +1383,11 @@ function renderLeft() {
     mapsHtml += `<button class="map-btn ${active?'active':''}"
                   onclick="startHunt('${id}')" ${locked?'disabled':''}>
                   ${m.name} ${bossTag} <span style="float:right;color:#aaa">Lv.${m.reqLevel}+</span>
-                  <div style="font-size:11px;color:#aaa;">${m.monster} (HP${m.mHp} 공${m.mAtk})</div>
+                  <div style="font-size:11px;color:#aaa;">${MONSTER_EMOJIS[m.monster]||'👹'} ${m.monster} (HP${m.mHp} 공${m.mAtk})</div>
                 </button>`;
   }
-
-  let combatHtml = '';
-  if (cm) {
-    const mpct = c.monsterMaxHp > 0 ? (c.monsterHp / c.monsterMaxHp * 100) : 0;
-    combatHtml = `
-      <h3>⚔️ 전투 중</h3>
-      <div style="font-size:12px;">${cm.monster}${cm.isBoss?' 👹':''}</div>
-      <div class="mon-bar"><div style="width:${Math.max(0,mpct)}%"></div></div>
-      <div style="font-size:11px;">${Math.max(0,c.monsterHp)} / ${c.monsterMaxHp}</div>
-      <div style="font-size:11px; color:#aaa;">처치: ${c.kills}</div>
-      <button class="danger" onclick="stopHunt()">사냥 중단</button>
-    `;
+  if (state.currentMap) {
+    mapsHtml += `<button class="danger" style="width:100%;margin-top:6px;" onclick="stopHunt()">🏘️ 마을로 귀환</button>`;
   }
 
   let matsHtml = '<h3>📦 재료</h3>';
@@ -827,7 +1400,7 @@ function renderLeft() {
     flamesHtml += `<div class="mat-row"><span style="color:${FLAME_COLORS[ft]}">${FLAME_NAMES[ft]}</span><span>${state.consumables['flame_'+ft]}</span></div>`;
   }
 
-  document.getElementById('leftPanel').innerHTML = mapsHtml + combatHtml + matsHtml + flamesHtml;
+  document.getElementById('leftPanel').innerHTML = mapsHtml + matsHtml + flamesHtml;
 }
 
 function gradeBadge(grade) {
@@ -850,7 +1423,6 @@ function itemCardHtml(item, equipped) {
   ].filter(x=>x).join(' / ');
   const optStr = item.options.map(statLabel).join(', ') || '없음';
 
-  // 보더 색상 = 최고 등급 (잠재/에디 중)
   const gradeIdx = Math.max(
     GRADES.indexOf(item.potentialGrade),
     GRADES.indexOf(item.addPotentialGrade),
@@ -947,7 +1519,7 @@ function renderShopTab() {
   html += `
     <div class="recipe-card">
       <div class="recipe-name">잠재 큐브 (메인 3슬롯)</div>
-      <div style="font-size:11px;color:#ccc;">잠재옵션 리롤. 등급 상승 확률 포함 (레→에 10% / 에→유 5% / 유→레전 1%)</div>
+      <div style="font-size:11px;color:#ccc;">잠재 리롤. 등급 상승 (레→에 10% / 에→유 5% / 유→레전 1%)</div>
       <div style="margin-top:4px;">
         <button class="primary" onclick="buyCube(1)" ${state.player.gold<PRICE_CUBE?'disabled':''}>1개 (${PRICE_CUBE}G)</button>
         <button class="primary" onclick="buyCube(10)" ${state.player.gold<PRICE_CUBE*10?'disabled':''}>10개 (${PRICE_CUBE*10}G)</button>
@@ -955,26 +1527,24 @@ function renderShopTab() {
     </div>
     <div class="recipe-card">
       <div class="recipe-name">에디셔널 큐브</div>
-      <div style="font-size:11px;color:#ccc;">에디셔널 잠재(별도 3슬롯) 리롤</div>
+      <div style="font-size:11px;color:#ccc;">에디셔널 잠재 리롤</div>
       <div style="margin-top:4px;">
         <button class="primary" onclick="buyAddCube(1)" ${state.player.gold<PRICE_ADD_CUBE?'disabled':''}>1개 (${PRICE_ADD_CUBE}G)</button>
         <button class="primary" onclick="buyAddCube(10)" ${state.player.gold<PRICE_ADD_CUBE*10?'disabled':''}>10개 (${PRICE_ADD_CUBE*10}G)</button>
       </div>
     </div>
   `;
-
   html += '<h3>🔥 환생의 불꽃</h3>';
   for (const ft of FLAME_TYPES) {
     const price = FLAME_PRICES[ft];
     html += `
       <div class="recipe-card">
         <div class="recipe-name" style="color:${FLAME_COLORS[ft]}">${FLAME_NAMES[ft]}</div>
-        <div style="font-size:11px;color:#ccc;">보유 ${state.consumables['flame_'+ft]}개 · 사용 시 4줄 보너스 스탯 부여</div>
+        <div style="font-size:11px;color:#ccc;">보유 ${state.consumables['flame_'+ft]}개 · 4줄 보너스 스탯</div>
         <button class="flame" onclick="buyFlame('${ft}',1)" ${state.player.gold<price?'disabled':''}>구매 (${price}G)</button>
       </div>
     `;
   }
-
   html += '<h3>💰 재료 판매</h3>';
   for (const m in MATERIALS) {
     const have = state.materials[m] || 0;
@@ -998,37 +1568,34 @@ function renderShopTab() {
 
 function renderInfoTab() {
   return `
-    <h3>📘 강화 시스템 안내</h3>
+    <h3>⚡ 액션 시스템</h3>
     <div class="recipe-card">
-      <div class="recipe-name">옵션</div>
-      <div style="font-size:11px;color:#ccc;">제작 시 티어 기반으로 1~4개 랜덤 부여. 변경 불가.</div>
+      <div class="recipe-name">⏱️ 속도 토글</div>
+      <div style="font-size:11px;color:#ccc;">x1 / x2 / x4 로 사냥 속도 변경. 애니메이션도 함께 가속.</div>
     </div>
     <div class="recipe-card">
-      <div class="recipe-name">잠재능력 (3슬롯)</div>
-      <div style="font-size:11px;color:#ccc;">큐브로 리롤. 등급 상승 시 더 강한 옵션 풀.<br>
-        ${gradeBadge('rare')} 기본 수치 / ${gradeBadge('epic')} % 옵션<br>
-        ${gradeBadge('unique')} 보스뎀 진입 / ${gradeBadge('legendary')} 데미지% 등 최상위</div>
+      <div class="recipe-name">💢 강타 (자동 스킬)</div>
+      <div style="font-size:11px;color:#ccc;">${SKILL_PERIOD}번째 공격마다 자동 발동, ${SKILL_DMG_MULT}배 데미지. 씬 하단 게이지 확인.</div>
     </div>
     <div class="recipe-card">
-      <div class="recipe-name">에디셔널 잠재 (3슬롯)</div>
-      <div style="font-size:11px;color:#ccc;">별도 슬롯, 메인 잠재와 함께 적용. 에디셔널 큐브로 리롤.</div>
+      <div class="recipe-name">🔥 콤보 보너스</div>
+      <div style="font-size:11px;color:#ccc;">연속 처치 — 사망 시 초기화<br>
+        ${COMBO_TIERS.slice(1).map(t => `<b style="color:#ffcc44">${t.at}</b>: ${t.label}`).join('<br>')}
+      </div>
+    </div>
+    <h3>📘 강화 시스템</h3>
+    <div class="recipe-card">
+      <div class="recipe-name">잠재 / 에디셔널</div>
+      <div style="font-size:11px;color:#ccc;">큐브로 리롤.
+        ${gradeBadge('rare')}${gradeBadge('epic')}${gradeBadge('unique')}${gradeBadge('legendary')}</div>
     </div>
     <div class="recipe-card">
-      <div class="recipe-name">환생의 불꽃 (4줄)</div>
-      <div style="font-size:11px;color:#ccc;">아이템에 4줄 보너스 스탯 부여. 4종 등급:<br>
-        <span style="color:${FLAME_COLORS.small}">작은</span> /
-        <span style="color:${FLAME_COLORS.master}">명장의</span> /
-        <span style="color:${FLAME_COLORS.eternal}">영원한</span> /
-        <span style="color:${FLAME_COLORS.powerful}">강력한</span><br>
-        ※ 강력한 불꽃은 광산 동굴 보스에서 0.5% 드랍</div>
+      <div class="recipe-name">환생의 불꽃</div>
+      <div style="font-size:11px;color:#ccc;">4줄 보너스 스탯. 강력한 불꽃은 광산 동굴 0.5% 드랍</div>
     </div>
     <div class="recipe-card">
       <div class="recipe-name">강화 (+0 ~ +10)</div>
-      <div style="font-size:11px;color:#ccc;">기본 스탯에 단계당 +20%. 6강부터 실패 시 단계 하락, 파괴 확률.</div>
-    </div>
-    <div class="recipe-card">
-      <div class="recipe-name">보스뎀 / 데미지</div>
-      <div style="font-size:11px;color:#ccc;">보스뎀은 ⚠BOSS 맵에서만 적용. 데미지는 모든 공격에 곱연산.</div>
+      <div style="font-size:11px;color:#ccc;">단계당 기본 스탯 +20%. 6강부터 실패 시 단계 하락, 파괴 확률.</div>
     </div>
   `;
 }
@@ -1046,14 +1613,22 @@ function render() {
   renderCenter();
   renderRight();
   renderLog();
+  updateSceneBars();
+  updateCombo();
 }
 
 /* =========================================================================
    초기화
    ========================================================================= */
 
+// 시작 시 나무 검 무료 지급 + 자동 장착
+const starter = createItemInstance('wood_sword');
+state.equipment.weapon = starter;
 state.player.hp = getTotals().maxHp;
-log('게임 시작! 우측 [안내] 탭에서 강화 시스템 설명을 확인하세요.', 'win');
+
+log('🦸 마을에 도착했습니다. 나무 검이 지급되었어요.', 'win');
+log('💡 우측 [안내] 탭에서 콤보·강타·속도 토글을 확인하세요.', 'gold');
+updateScene();
 render();
 </script>
 

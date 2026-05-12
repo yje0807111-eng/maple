@@ -2,59 +2,116 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>메이플식 자동사냥 RPG</title>
+<title>⚔️ 자동사냥 RPG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Do+Hyeon&family=Jua&display=swap" rel="stylesheet">
 <style>
-  :root { --speed: 1; }
+  :root {
+    --speed: 1;
+    --bg-dark:   #06061a;
+    --bg-panel:  linear-gradient(135deg, #1a1a32 0%, #131326 100%);
+    --bg-card:   linear-gradient(180deg, #242442 0%, #1a1a30 100%);
+    --border-1:  rgba(150, 120, 220, 0.25);
+    --border-2:  rgba(255, 204, 102, 0.4);
+    --text:      #f0f0ff;
+    --muted:     #8a8aaa;
+    --gold:      #ffcc66;
+    --purple:    #aa88ff;
+    --red:       #ff4466;
+    --green:     #66ff88;
+    --cyan:      #66ddff;
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Malgun Gothic', sans-serif;
-    background: #0d0d1a;
-    color: #eee;
-    padding: 8px;
-    font-size: 13px;
+    font-family: 'Do Hyeon', 'Malgun Gothic', sans-serif;
+    background:
+      radial-gradient(ellipse at top, #1a1a3a 0%, #06061a 50%, #03030f 100%),
+      var(--bg-dark);
+    color: var(--text);
+    padding: 10px;
+    font-size: 14px;
     min-height: 100vh;
+    letter-spacing: -0.2px;
   }
-  h1 { font-size: 18px; margin-bottom: 8px; color: #ffcc66; text-align: center;
-       text-shadow: 0 0 10px rgba(255,204,102,0.4); }
-  h2 { font-size: 14px; margin-bottom: 6px; color: #88ccff; border-bottom: 1px solid #444; padding-bottom: 3px; }
-  h3 { font-size: 13px; margin: 8px 0 4px; color: #ffaa88; }
+  h1 {
+    font-family: 'Black Han Sans', 'Do Hyeon', sans-serif;
+    font-size: 26px;
+    margin-bottom: 10px;
+    color: var(--gold);
+    text-align: center;
+    text-shadow:
+      0 0 15px rgba(255,204,102,0.6),
+      0 0 30px rgba(255,204,102,0.3),
+      2px 2px 0 #000;
+    letter-spacing: 2px;
+  }
+  h2 {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 15px;
+    margin-bottom: 8px;
+    color: var(--cyan);
+    border-bottom: 2px solid rgba(102,221,255,0.3);
+    padding-bottom: 4px;
+    letter-spacing: 1px;
+    text-shadow: 0 0 8px rgba(102,221,255,0.3);
+  }
+  h3 {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 13px;
+    margin: 10px 0 5px;
+    color: #ffaa88;
+    letter-spacing: 1px;
+  }
 
   .layout {
     display: grid;
-    grid-template-columns: 1fr 1.6fr 1.3fr;
+    grid-template-columns: 1fr 1.7fr 1.3fr;
     grid-template-rows: auto auto 1fr auto;
-    gap: 8px;
-    min-height: calc(100vh - 50px);
+    gap: 10px;
+    min-height: calc(100vh - 60px);
   }
   .panel {
-    background: #2a2a44;
-    border: 1px solid #444;
-    border-radius: 6px;
-    padding: 10px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-1);
+    border-radius: 10px;
+    padding: 12px;
     overflow-y: auto;
+    box-shadow:
+      0 4px 20px rgba(0,0,0,0.5),
+      inset 0 1px 0 rgba(255,255,255,0.05),
+      inset 0 -1px 0 rgba(0,0,0,0.3);
+    position: relative;
+  }
+  .panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 8%; right: 8%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,204,102,0.5), transparent);
   }
   .top    { grid-column: 1 / 4; grid-row: 1; }
   .scene-row { grid-column: 1 / 4; grid-row: 2; padding: 0; overflow: hidden; }
-  .left   { grid-column: 1; grid-row: 3; max-height: 440px; }
-  .center { grid-column: 2; grid-row: 3; max-height: 440px; }
-  .right  { grid-column: 3; grid-row: 3; max-height: 440px; }
-  .bottom { grid-column: 1 / 4; grid-row: 4; max-height: 120px; }
+  .left   { grid-column: 1; grid-row: 3; max-height: 540px; }
+  .center { grid-column: 2; grid-row: 3; max-height: 540px; }
+  .right  { grid-column: 3; grid-row: 3; max-height: 540px; }
+  .bottom { grid-column: 1 / 4; grid-row: 4; max-height: 130px; }
 
   /* ===== SCENE ===== */
   .scene {
     position: relative;
-    height: 280px;
-    border: 2px solid #444;
-    border-radius: 8px;
+    height: 320px;
+    border: 2px solid var(--border-1);
+    border-radius: 10px;
     overflow: hidden;
     background: linear-gradient(180deg, #87CEEB 0%, #FFE4B5 65%, #228B22 65%, #1a5a14 100%);
+    box-shadow: inset 0 0 60px rgba(0,0,0,0.4), 0 0 30px rgba(0,0,0,0.5);
   }
   .scene.town    { background: linear-gradient(180deg, #87CEEB 0%, #FFE4B5 65%, #5fb84a 65%, #2d6b1f 100%); }
   .scene.meadow  { background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 55%, #90EE90 55%, #4a7a2a 100%); }
   .scene.forest  { background: linear-gradient(180deg, #2a3a4a 0%, #1a2a1a 50%, #0d2010 50%, #050d05 100%); }
   .scene.cave    { background: radial-gradient(ellipse at center top, #4a2244 0%, #1a0820 50%, #0a0410 100%); }
 
-  /* 스킬 발동 시 화면 플래시 */
   .scene.skill-flash::after {
     content: '';
     position: absolute;
@@ -68,6 +125,16 @@
     0%   { opacity: 0; }
     30%  { opacity: 1; }
     100% { opacity: 0; }
+  }
+
+  .scene.elite-flash::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(255,68,102,0.7), transparent 60%);
+    animation: skill-flash 0.8s ease-out;
+    z-index: 30;
   }
 
   .prop {
@@ -95,111 +162,122 @@
 
   .scene-label {
     position: absolute;
-    top: 8px; left: 10px;
-    background: rgba(0,0,0,0.5);
-    padding: 3px 8px;
-    border-radius: 4px;
+    top: 10px; left: 12px;
+    background: linear-gradient(135deg, rgba(20,20,40,0.85), rgba(40,20,60,0.85));
+    padding: 5px 12px;
+    border-radius: 16px;
     font-weight: bold;
     color: #fff;
     font-size: 13px;
     z-index: 20;
+    border: 1px solid rgba(255,204,102,0.5);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
   }
   .scene-info {
     position: absolute;
-    top: 36px; left: 10px;
-    background: rgba(0,0,0,0.4);
-    padding: 2px 8px;
-    border-radius: 4px;
-    color: #ffcc66;
+    top: 44px; left: 12px;
+    background: rgba(0,0,0,0.5);
+    padding: 3px 10px;
+    border-radius: 12px;
+    color: var(--gold);
     font-size: 11px;
     z-index: 20;
   }
 
-  /* 속도 토글 */
   .speed-toggle {
     position: absolute;
-    top: 8px;
-    right: 10px;
+    top: 10px;
+    right: 12px;
     z-index: 21;
     display: flex;
-    gap: 0;
-    background: rgba(0,0,0,0.55);
-    border-radius: 4px;
-    padding: 2px;
+    gap: 2px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 6px;
+    padding: 3px;
+    border: 1px solid rgba(255,255,255,0.1);
   }
   .speed-toggle button {
     margin: 0;
     font-size: 11px;
-    padding: 3px 8px;
+    padding: 3px 9px;
     background: transparent;
-    border: 1px solid #555;
-    color: #ddd;
-    border-radius: 3px;
+    border: 1px solid transparent;
+    color: #ccc;
+    border-radius: 4px;
+    box-shadow: none;
   }
   .speed-toggle button.active {
-    background: #5a4a8e;
-    border-color: #aa88ff;
+    background: linear-gradient(180deg, #6a4aae, #4a2a8e);
+    border-color: var(--purple);
     color: #fff;
     font-weight: bold;
+    box-shadow: 0 0 10px rgba(170,136,255,0.4);
   }
 
-  /* 콤보 카운터 */
   .combo-counter {
     position: absolute;
-    top: 8px;
+    top: 10px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.65);
-    padding: 4px 14px;
-    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(40,20,0,0.9), rgba(60,30,0,0.9));
+    padding: 6px 18px;
+    border-radius: 22px;
     font-weight: bold;
-    color: #ffcc44;
+    color: var(--gold);
     text-shadow: 0 0 8px #fb3, 1px 1px 0 #000;
     z-index: 20;
     border: 2px solid #fb3;
     display: none;
     font-size: 16px;
+    box-shadow: 0 0 15px rgba(255,204,102,0.4);
   }
   .combo-counter.show { display: block; }
-  .combo-counter.tier2 { color:#ff88ff; border-color:#f8f; text-shadow:0 0 8px #f8f; font-size:18px; }
-  .combo-counter.tier3 { color:#88ffff; border-color:#8ff; text-shadow:0 0 12px #8ff; font-size:20px; }
-  .combo-counter.tier4 { color:#ff4488; border-color:#f48; text-shadow:0 0 16px #f48; font-size:24px; }
+  .combo-counter.tier2 { color:#ff88ff; border-color:#f8f; text-shadow:0 0 8px #f8f; font-size:18px;
+    background: linear-gradient(135deg, rgba(40,0,40,0.9), rgba(60,0,60,0.9));
+    box-shadow: 0 0 18px rgba(255,136,255,0.5); }
+  .combo-counter.tier3 { color:#88ffff; border-color:#8ff; text-shadow:0 0 12px #8ff; font-size:20px;
+    background: linear-gradient(135deg, rgba(0,40,40,0.9), rgba(0,60,60,0.9));
+    box-shadow: 0 0 22px rgba(136,255,255,0.6); }
+  .combo-counter.tier4 { color:#ff4488; border-color:#f48; text-shadow:0 0 16px #f48; font-size:24px;
+    background: linear-gradient(135deg, rgba(60,0,20,0.9), rgba(80,0,30,0.9));
+    box-shadow: 0 0 28px rgba(255,68,136,0.7); }
   .combo-counter.popped { animation: combo-pop calc(0.3s / var(--speed)); }
   @keyframes combo-pop {
     0%   { transform: translateX(-50%) scale(1); }
     40%  { transform: translateX(-50%) scale(1.4); }
     100% { transform: translateX(-50%) scale(1); }
   }
-  .combo-bonus { font-size: 10px; color:#aaa; }
+  .combo-bonus { font-size: 10px; color:#ccc; margin-top: 1px; }
 
-  /* 스킬 쿨다운 게이지 (씬 하단) */
   .skill-bar {
     position: absolute;
-    bottom: 4px; left: 50%;
+    bottom: 6px; left: 50%;
     transform: translateX(-50%);
-    width: 120px; height: 6px;
-    background: rgba(0,0,0,0.5);
-    border-radius: 3px;
+    width: 140px; height: 8px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 4px;
     overflow: hidden;
     z-index: 20;
     display: none;
+    border: 1px solid rgba(255,255,255,0.15);
   }
   .skill-bar.show { display: block; }
   .skill-bar > div {
     height: 100%;
     background: linear-gradient(90deg, #ffaa44, #ff4444);
+    box-shadow: 0 0 8px rgba(255,170,68,0.6);
     transition: width 0.15s linear;
   }
   .skill-bar-label {
     position: absolute;
-    bottom: 12px; left: 50%;
+    bottom: 16px; left: 50%;
     transform: translateX(-50%);
-    font-size: 10px; color: #ffcc66;
+    font-size: 10px; color: var(--gold);
     z-index: 20;
     text-shadow: 1px 1px 0 #000;
+    font-weight: bold;
   }
 
-  /* ===== 액터 ===== */
   .actor {
     position: absolute;
     bottom: 20px;
@@ -211,34 +289,50 @@
   .hero    { left: 22%; transform: translateX(-50%); }
   .monster { right: 22%; transform: translateX(50%); display: none; }
   .monster.show { display: flex; }
+  .monster.elite .actor-emoji {
+    filter: drop-shadow(0 0 18px #ff4466) drop-shadow(3px 3px 5px #000);
+    animation: idle-bob 2.2s ease-in-out infinite, elite-pulse 1s ease-in-out infinite;
+  }
+  @keyframes elite-pulse {
+    0%,100% { transform: scale(1); }
+    50%     { transform: scale(1.05); }
+  }
 
   .actor-name {
-    font-size: 11px;
+    font-size: 12px;
     color: #fff;
     text-shadow: 1px 1px 2px #000, -1px -1px 2px #000;
     margin-bottom: 2px;
     font-weight: bold;
   }
+  .monster.elite .actor-name { color: #ffaaaa; }
   .actor-bar {
-    width: 70px;
-    height: 7px;
-    background: #000;
+    width: 80px;
+    height: 8px;
+    background: rgba(0,0,0,0.7);
     border: 1px solid #aaa;
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 4px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
   }
   .actor-bar > div {
     height: 100%;
     background: linear-gradient(90deg, #ff4444, #ff8866);
     transition: width 0.3s ease-out;
+    box-shadow: 0 0 5px rgba(255,68,68,0.5);
   }
   .monster .actor-bar > div {
     background: linear-gradient(90deg, #aa44ff, #ff66aa);
+    box-shadow: 0 0 5px rgba(170,68,255,0.5);
+  }
+  .monster.elite .actor-bar > div {
+    background: linear-gradient(90deg, #ff2244, #ffaa44);
+    box-shadow: 0 0 10px rgba(255,68,68,0.7);
   }
 
   .actor-emoji {
-    font-size: 60px;
+    font-size: 66px;
     line-height: 1;
     filter: drop-shadow(3px 3px 5px rgba(0,0,0,0.7));
     animation: idle-bob 2.2s ease-in-out infinite;
@@ -252,9 +346,9 @@
   .actor::after {
     content: '';
     position: absolute;
-    bottom: -8px;
-    width: 50px;
-    height: 12px;
+    bottom: -10px;
+    width: 56px;
+    height: 14px;
     background: radial-gradient(ellipse, rgba(0,0,0,0.5), transparent 70%);
     z-index: -1;
   }
@@ -300,23 +394,24 @@
     100% { transform: scale(0.2) rotate(720deg); opacity: 0; }
   }
 
-  /* 데미지 / 슬래시 / 빅슬래시 */
   .effects { position: absolute; inset: 0; pointer-events: none; z-index: 15; }
   .dmg-num {
     position: absolute;
     font-weight: bold;
     font-size: 22px;
+    font-family: 'Black Han Sans', sans-serif;
     color: #ffeb3b;
     text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000;
     animation: dmg-float calc(0.9s / var(--speed)) ease-out forwards;
+    letter-spacing: 1px;
   }
-  .dmg-num.crit { font-size: 32px; color: #ff3344; text-shadow: 0 0 10px #f88, 2px 2px 0 #000; }
-  .dmg-num.skill { font-size: 38px; color: #ffeb3b; text-shadow: 0 0 14px #fb3, 2px 2px 0 #000; }
+  .dmg-num.crit { font-size: 32px; color: #ff3344; text-shadow: 0 0 12px #f88, 2px 2px 0 #000; }
+  .dmg-num.skill { font-size: 40px; color: #ffeb3b; text-shadow: 0 0 16px #fb3, 2px 2px 0 #000; }
   .dmg-num.player { color: #ff7777; font-size: 18px; }
   @keyframes dmg-float {
     0%   { transform: translate(-50%, 0) scale(0.5); opacity: 0; }
     20%  { transform: translate(-50%, -10px) scale(1.2); opacity: 1; }
-    100% { transform: translate(-50%, -70px) scale(1); opacity: 0; }
+    100% { transform: translate(-50%, -80px) scale(1); opacity: 0; }
   }
 
   .slash {
@@ -334,11 +429,11 @@
   }
   .big-slash {
     position: absolute;
-    font-size: 100px;
+    font-size: 110px;
     pointer-events: none;
     animation: big-slash-anim calc(0.6s / var(--speed)) ease-out forwards;
     transform: translate(-50%, -50%);
-    text-shadow: 0 0 25px #ffeb3b;
+    text-shadow: 0 0 30px #ffeb3b;
     z-index: 12;
   }
   @keyframes big-slash-anim {
@@ -348,114 +443,350 @@
   }
 
   /* ===== 사이드 UI ===== */
-  .stat-row { display: flex; justify-content: space-between; margin: 2px 0; font-size: 12px; }
-  .stat-row span:first-child { color: #aaa; }
+  .stat-row { display: flex; justify-content: space-between; margin: 2px 0; font-size: 13px; }
+  .stat-row span:first-child { color: var(--muted); }
   .stat-row span:last-child  { color: #fff; font-weight: bold; }
 
-  .hp-bar {
-    width: 100%; height: 14px;
-    background: #444; border-radius: 3px; overflow: hidden;
+  /* 메인 HP 바 */
+  .hp-bar-big {
+    width: 100%; height: 18px;
+    background: linear-gradient(180deg, #1a0a0a, #2a1a1a);
+    border: 1px solid #555;
+    border-radius: 9px;
+    overflow: hidden;
     margin: 3px 0;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+    position: relative;
   }
-  .hp-bar > div { height: 100%; background: linear-gradient(90deg, #ff4444, #ff8866); transition: width 0.2s; }
+  .hp-bar-big > div {
+    height: 100%;
+    background: linear-gradient(180deg, #ff8866 0%, #ff4444 50%, #cc2222 100%);
+    transition: width 0.3s;
+    box-shadow: 0 0 12px rgba(255,68,68,0.6);
+    position: relative;
+  }
+  .hp-bar-big > div::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 45%;
+    background: linear-gradient(180deg, rgba(255,255,255,0.35), transparent);
+    border-radius: 8px 8px 0 0;
+  }
+  .exp-bar {
+    width: 100%; height: 8px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 4px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+  }
+  .exp-bar > div {
+    height: 100%;
+    background: linear-gradient(90deg, #88ccff, #aa55ff);
+    box-shadow: 0 0 8px rgba(170,85,255,0.6);
+    transition: width 0.3s;
+  }
 
   button {
-    background: #3a3a5e;
-    color: #eee;
+    background: linear-gradient(180deg, #3a3a5e 0%, #2a2a4e 100%);
+    color: var(--text);
     border: 1px solid #555;
-    border-radius: 4px;
-    padding: 3px 7px;
+    border-radius: 5px;
+    padding: 4px 9px;
     margin: 2px;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 12px;
     font-family: inherit;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+    transition: all 0.12s;
+    letter-spacing: -0.3px;
   }
-  button:hover:not(:disabled) { background: #4a4a7e; border-color: #888; }
-  button:disabled { opacity: 0.4; cursor: not-allowed; }
-  button.primary { background: #5a4a8e; }
-  button.danger  { background: #8e4a4a; }
-  button.success { background: #4a8e5a; }
-  button.gold    { background: #8e7a3a; }
-  button.flame   { background: #aa4422; }
+  button:hover:not(:disabled) {
+    background: linear-gradient(180deg, #4a4a7e 0%, #3a3a6e 100%);
+    border-color: #aaa;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5), 0 0 8px rgba(255,255,255,0.1);
+  }
+  button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  button:disabled { opacity: 0.35; cursor: not-allowed; }
+  button.primary { background: linear-gradient(180deg, #6a4aae, #4a2a8e); border-color: #aa88ff; }
+  button.primary:hover:not(:disabled) { background: linear-gradient(180deg, #7a5abe, #5a3a9e); }
+  button.danger  { background: linear-gradient(180deg, #ae4a4a, #8e2a2a); border-color: #ff8888; }
+  button.success { background: linear-gradient(180deg, #4aae5a, #2a8e3a); border-color: #88ff88; }
+  button.gold    { background: linear-gradient(180deg, #ae8a3a, #8e6a1a); border-color: #ffcc66; }
+  button.flame   { background: linear-gradient(180deg, #ce5522, #9e2222); border-color: #ff8866; }
 
   .map-btn {
     display: block; width: 100%; text-align: left;
-    margin: 3px 0; padding: 6px 8px;
+    margin: 4px 0; padding: 8px 10px; font-size: 13px;
   }
-  .map-btn.active { background: #6a8e4a; border-color: #aaff88; }
+  .map-btn.active {
+    background: linear-gradient(180deg, #6a8e4a, #4a6e2a);
+    border-color: #aaff88;
+    box-shadow: 0 0 15px rgba(170,255,136,0.4);
+  }
   .boss-tag { color: #ff8888; font-size: 10px; font-weight: bold; }
 
+  /* ===== Paper-doll ===== */
+  .paper-doll {
+    background: linear-gradient(135deg, rgba(40,40,70,0.6), rgba(20,20,40,0.6));
+    border: 1px solid var(--border-1);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+  .doll-title {
+    font-family: 'Black Han Sans', sans-serif;
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  .doll-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .eq-slot {
+    background: rgba(0,0,0,0.5);
+    border: 2px solid #444;
+    border-radius: 6px;
+    height: 64px;
+    padding: 4px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    overflow: hidden;
+  }
+  .eq-slot:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+  .eq-slot.empty { opacity: 0.5; cursor: default; }
+  .eq-slot.empty:hover { transform: none; }
+  .slot-icon { font-size: 26px; line-height: 1; filter: drop-shadow(0 0 4px rgba(0,0,0,0.5)); }
+  .slot-name {
+    font-size: 9px; color: #fff; text-align: center;
+    text-shadow: 1px 1px 0 #000;
+    margin-top: 2px;
+    line-height: 1.1;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .slot-enh {
+    position: absolute;
+    top: 2px; right: 4px;
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: bold;
+    text-shadow: 1px 1px 0 #000;
+  }
+  .slot-label {
+    position: absolute;
+    top: 2px; left: 4px;
+    font-size: 9px;
+    color: var(--muted);
+    text-shadow: 1px 1px 0 #000;
+  }
+
+  /* ===== 아이템 카드 ===== */
   .item-card {
-    background: #1f1f38;
+    background: var(--bg-card);
     border: 2px solid #555;
-    border-radius: 4px;
-    padding: 6px 8px;
-    margin: 4px 0;
+    border-radius: 6px;
+    padding: 7px 9px;
+    margin: 5px 0;
     font-size: 12px;
     position: relative;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: transform 0.1s;
   }
-  .item-card.equipped { background: #2a2a3a; }
+  .item-card:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+  .item-card.equipped {
+    background: linear-gradient(180deg, #2e2e4e 0%, #1e1e36 100%);
+    box-shadow: 0 0 12px rgba(255,170,68,0.3);
+  }
   .item-card.equipped::before {
-    content:'장착중'; position:absolute; top:-8px; right:6px;
-    background:#ffaa44; color:#222; font-size:10px; padding:1px 5px; border-radius:3px;
+    content:'장착중'; position:absolute; top:-9px; right:8px;
+    background: linear-gradient(180deg, #ffaa44, #cc7722);
+    color:#fff; font-size:10px; padding:1px 7px; border-radius:8px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
   }
-  .item-name { font-weight: bold; color: #ffcc66; }
-  .item-slot { color: #88ccff; font-size: 11px; }
-  .item-line { color: #ccc; font-size: 11px; margin: 2px 0; }
+  .item-name { font-weight: bold; color: var(--gold); font-size: 13px; }
+  .item-slot {
+    color: var(--cyan); font-size: 11px;
+    background: rgba(102,221,255,0.1);
+    padding: 1px 5px; border-radius: 3px;
+  }
+  .item-line { color: #eee; font-size: 11px; margin: 2px 0; }
   .item-pot  { font-size: 11px; margin: 2px 0; }
   .item-opt  { color: #ffddaa; font-size: 11px; margin: 2px 0; }
   .item-flame { color: #ff9966; font-size: 11px; margin: 2px 0; }
-  .item-actions { margin-top: 4px; }
+  .item-actions { margin-top: 5px; }
+  .item-actions button { font-size: 10px; padding: 2px 6px; }
 
   .grade-label {
     display: inline-block;
     font-size: 10px;
-    padding: 0 4px;
-    border-radius: 2px;
-    margin-right: 3px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-right: 4px;
     font-weight: bold;
     color: #111;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
 
+  /* ===== 레시피/상점 카드 ===== */
   .recipe-card {
-    background: #1f1f38;
+    background: var(--bg-card);
     border: 1px solid #555;
-    border-radius: 4px;
-    padding: 6px 8px;
-    margin: 4px 0;
+    border-radius: 6px;
+    padding: 7px 10px;
+    margin: 5px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
-  .recipe-name { font-weight: bold; color: #ffcc66; }
+  .recipe-name { font-weight: bold; color: var(--gold); }
   .recipe-mat { color: #ccc; font-size: 11px; }
   .recipe-mat.lack { color: #ff8888; }
 
-  .mat-row { display: flex; justify-content: space-between; font-size: 12px; padding: 2px 4px; }
-  .mat-row:nth-child(odd) { background: #222238; }
+  .mat-row {
+    display: flex; justify-content: space-between;
+    font-size: 12px; padding: 3px 6px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .mat-row span:last-child { color: var(--gold); font-weight: bold; }
 
-  .tabs { display: flex; gap: 2px; margin-bottom: 6px; }
-  .tabs button { flex: 1; font-size: 12px; padding: 5px; }
-  .tabs button.active { background: #5a4a8e; border-color: #aa88ff; }
+  .tabs { display: flex; gap: 3px; margin-bottom: 8px; }
+  .tabs button {
+    flex: 1; font-size: 12px; padding: 6px 4px;
+    border-radius: 6px 6px 0 0;
+  }
+  .tabs button.active {
+    background: linear-gradient(180deg, #6a4aae, #4a2a8e);
+    border-color: var(--purple);
+    box-shadow: 0 -2px 8px rgba(170,136,255,0.3);
+  }
 
-  .log-line { font-size: 11px; color: #ccc; padding: 1px 4px; }
-  .log-line.gold { color: #ffcc66; }
-  .log-line.drop { color: #88ff88; }
+  /* ===== Quest ===== */
+  .quest-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-1);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin: 6px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+  .quest-card.done {
+    background: linear-gradient(135deg, rgba(60,80,40,0.6), rgba(40,50,20,0.6));
+    border-color: rgba(102,255,136,0.4);
+  }
+  .quest-name { font-weight: bold; color: var(--gold); font-size: 13px; }
+  .quest-name.done { color: var(--green); }
+  .quest-desc { color: #ccc; font-size: 11px; margin: 2px 0; }
+  .quest-progress {
+    width: 100%; height: 8px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 4px 0;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+  }
+  .quest-progress > div {
+    height: 100%;
+    background: linear-gradient(90deg, #66ddff, #aa55ff);
+    box-shadow: 0 0 6px rgba(170,85,255,0.6);
+    transition: width 0.3s;
+  }
+  .quest-reward {
+    color: var(--gold); font-size: 11px;
+    background: rgba(255,204,102,0.1);
+    padding: 2px 6px; border-radius: 3px;
+    display: inline-block;
+    margin-top: 3px;
+  }
+
+  /* ===== Toast ===== */
+  .toast-container {
+    position: fixed;
+    top: 20px; right: 20px;
+    z-index: 1000;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .toast {
+    background: linear-gradient(135deg, rgba(20,20,40,0.95), rgba(40,20,60,0.95));
+    border: 2px solid var(--gold);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 13px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 16px rgba(255,204,102,0.3);
+    opacity: 0;
+    transform: translateX(60px);
+    transition: all 0.3s ease-out;
+    pointer-events: auto;
+    min-width: 220px;
+    max-width: 320px;
+  }
+  .toast.show { opacity: 1; transform: translateX(0); }
+  .toast.success { border-color: var(--green); box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 16px rgba(102,255,136,0.4); }
+  .toast.warn { border-color: var(--red); box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 16px rgba(255,68,102,0.4); }
+  .toast.epic { border-color: var(--purple); box-shadow: 0 4px 20px rgba(0,0,0,0.6), 0 0 16px rgba(170,136,255,0.5); }
+
+  /* ===== 로그 ===== */
+  .log-line {
+    font-size: 11px; color: #ccc;
+    padding: 1px 6px;
+    border-left: 2px solid transparent;
+  }
+  .log-line.gold { color: var(--gold); border-color: var(--gold); }
+  .log-line.drop { color: var(--green); border-color: var(--green); }
   .log-line.crit { color: #ff8866; }
-  .log-line.fail { color: #ff6666; }
-  .log-line.win  { color: #aaffaa; font-weight: bold; }
-  .log-line.legendary { color: #44ff88; font-weight: bold; }
-  .log-line.unique { color: #ffcc44; font-weight: bold; }
-  .log-line.epic { color: #cc88ff; }
-  .log-line.skill { color: #ffeb3b; font-weight: bold; }
+  .log-line.fail { color: #ff6666; border-color: #ff6666; }
+  .log-line.win  { color: #aaffaa; font-weight: bold; border-color: var(--green); }
+  .log-line.legendary { color: var(--green); font-weight: bold; }
+  .log-line.unique { color: var(--gold); font-weight: bold; }
+  .log-line.epic { color: var(--purple); }
+  .log-line.skill { color: var(--gold); font-weight: bold; border-color: var(--gold); }
+  .log-line.elite { color: var(--red); font-weight: bold; border-color: var(--red); }
 
-  .empty { color: #666; font-style: italic; font-size: 12px; padding: 8px; text-align: center; }
+  .empty { color: #555; font-style: italic; font-size: 11px; padding: 8px; text-align: center; }
+
+  /* ===== 저장 인디케이터 ===== */
+  .save-ind {
+    position: fixed;
+    bottom: 8px; right: 12px;
+    font-size: 10px;
+    color: var(--muted);
+    background: rgba(0,0,0,0.6);
+    padding: 3px 8px;
+    border-radius: 10px;
+    z-index: 100;
+    transition: opacity 0.3s;
+  }
+  .save-ind.flash { color: var(--green); }
 
   ::-webkit-scrollbar { width: 8px; }
-  ::-webkit-scrollbar-track { background: #1a1a2e; }
-  ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+  ::-webkit-scrollbar-track { background: #0a0a1a; }
+  ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #666; }
 </style>
 </head>
 <body>
 
-<h1>⚔️ 메이플식 자동사냥 RPG</h1>
+<h1>⚔️ 자동사냥 RPG</h1>
 
 <div class="layout">
   <div class="panel top" id="playerPanel"></div>
@@ -465,7 +796,7 @@
       <div class="scene-label" id="sceneLabel">🏘️ 마을</div>
       <div class="scene-info" id="sceneInfo"></div>
 
-      <div class="speed-toggle" id="speedToggle">
+      <div class="speed-toggle">
         <button class="active" id="spd1" onclick="setSpeed(1)">⏱️ x1</button>
         <button id="spd2" onclick="setSpeed(2)">x2</button>
         <button id="spd4" onclick="setSpeed(4)">x4</button>
@@ -502,15 +833,20 @@
   <div class="panel right" id="rightPanel"></div>
 
   <div class="panel bottom" id="logPanel">
-    <h2>📜 로그</h2>
+    <h2>📜 전투 로그</h2>
     <div id="logContent"></div>
   </div>
 </div>
+
+<div class="toast-container" id="toastContainer"></div>
+<div class="save-ind" id="saveInd">💾 자동 저장 활성</div>
 
 <script>
 /* =========================================================================
    [A] 정적 데이터
    ========================================================================= */
+
+const SAVE_KEY = 'maple_save_v3';
 
 const MATERIALS = {
   slime_jelly: { name: '슬라임 젤리',  sellPrice: 2  },
@@ -519,7 +855,6 @@ const MATERIALS = {
   magic_dust:  { name: '마력의 가루',  sellPrice: 15 },
 };
 
-/* 밸런스: 초반 1-2방컷, 보상 ↑ */
 const MAPS = {
   meadow: { id:'meadow', name:'초원', monster:'슬라임', mHp:8, mAtk:2, mDef:0,
             goldMin:3, goldMax:7, isBoss:false, reqLevel:1, expReward:15,
@@ -539,12 +874,43 @@ const MONSTER_EMOJIS = {
   '광물 골렘': '🗿',
 };
 
+/* 7개 슬롯: weapon / armor / accessory / helmet / gloves / boots / cape */
+const SLOT_ICONS = {
+  weapon: '⚔️', armor: '👕', accessory: '💍',
+  helmet: '🪖', gloves: '🧤', boots: '👢', cape: '🧥',
+};
+const SLOT_NAMES = {
+  weapon: '무기', armor: '갑옷', accessory: '액세서리',
+  helmet: '모자', gloves: '장갑', boots: '신발', cape: '망토',
+};
+const SLOT_ORDER = ['helmet','weapon','armor','cape','gloves','boots','accessory'];
+
 const ITEM_TEMPLATES = {
+  // 무기
   wood_sword:    { id:'wood_sword',    name:'나무 검',         slot:'weapon',    tier:1, baseAtk:5,  baseDef:0,  recipe:{ slime_jelly:5 } },
   iron_sword:    { id:'iron_sword',    name:'강철 검',         slot:'weapon',    tier:2, baseAtk:15, baseDef:0,  recipe:{ wolf_fang:5, iron_ore:3 } },
   mithril_blade: { id:'mithril_blade', name:'미스릴 블레이드', slot:'weapon',    tier:3, baseAtk:35, baseDef:2,  recipe:{ iron_ore:10, magic_dust:5 } },
+  // 갑옷
   leather_armor: { id:'leather_armor', name:'가죽 갑옷',       slot:'armor',     tier:1, baseAtk:0,  baseDef:8,  recipe:{ wolf_fang:3, slime_jelly:3 } },
   iron_armor:    { id:'iron_armor',    name:'강철 갑옷',       slot:'armor',     tier:2, baseAtk:0,  baseDef:20, recipe:{ iron_ore:6, wolf_fang:4 } },
+  mythril_plate: { id:'mythril_plate', name:'미스릴 플레이트', slot:'armor',     tier:3, baseAtk:2,  baseDef:40, recipe:{ iron_ore:10, magic_dust:6 } },
+  // 모자
+  leather_cap:   { id:'leather_cap',   name:'가죽 모자',       slot:'helmet',    tier:1, baseAtk:0,  baseDef:5,  recipe:{ slime_jelly:3, wolf_fang:2 } },
+  iron_helm:     { id:'iron_helm',     name:'강철 투구',       slot:'helmet',    tier:2, baseAtk:0,  baseDef:12, recipe:{ iron_ore:4, wolf_fang:3 } },
+  mithril_crown: { id:'mithril_crown', name:'미스릴 크라운',   slot:'helmet',    tier:3, baseAtk:3,  baseDef:25, recipe:{ iron_ore:6, magic_dust:4 } },
+  // 장갑
+  cloth_gloves:  { id:'cloth_gloves',  name:'천 장갑',         slot:'gloves',    tier:1, baseAtk:2,  baseDef:2,  recipe:{ wolf_fang:2, slime_jelly:2 } },
+  iron_gauntlet: { id:'iron_gauntlet', name:'강철 건틀릿',     slot:'gloves',    tier:2, baseAtk:5,  baseDef:5,  recipe:{ iron_ore:3, wolf_fang:2 } },
+  mithril_glove: { id:'mithril_glove', name:'미스릴 글러브',   slot:'gloves',    tier:3, baseAtk:10, baseDef:8,  recipe:{ iron_ore:5, magic_dust:3 } },
+  // 신발
+  leather_boots: { id:'leather_boots', name:'가죽 부츠',       slot:'boots',     tier:1, baseAtk:0,  baseDef:3,  recipe:{ wolf_fang:2, slime_jelly:2 } },
+  iron_boots:    { id:'iron_boots',    name:'강철 부츠',       slot:'boots',     tier:2, baseAtk:0,  baseDef:10, recipe:{ iron_ore:4, wolf_fang:2 } },
+  mithril_boots: { id:'mithril_boots', name:'미스릴 부츠',     slot:'boots',     tier:3, baseAtk:2,  baseDef:18, recipe:{ iron_ore:5, magic_dust:3 } },
+  // 망토
+  cloth_cape:    { id:'cloth_cape',    name:'천 망토',         slot:'cape',      tier:1, baseAtk:1,  baseDef:1,  recipe:{ slime_jelly:4, wolf_fang:1 } },
+  wolf_cape:     { id:'wolf_cape',     name:'늑대 망토',       slot:'cape',      tier:2, baseAtk:3,  baseDef:6,  recipe:{ wolf_fang:5, iron_ore:2 } },
+  dragon_cape:   { id:'dragon_cape',   name:'용의 망토',       slot:'cape',      tier:3, baseAtk:8,  baseDef:10, recipe:{ magic_dust:5, iron_ore:5 } },
+  // 액세서리
   copper_ring:   { id:'copper_ring',   name:'구리 반지',       slot:'accessory', tier:1, baseAtk:2,  baseDef:2,  recipe:{ magic_dust:2, iron_ore:2 } },
   mythic_amulet: { id:'mythic_amulet', name:'신비의 목걸이',   slot:'accessory', tier:3, baseAtk:5,  baseDef:5,  recipe:{ magic_dust:8, iron_ore:5 } },
 };
@@ -563,34 +929,34 @@ const GRADE_UPGRADE = { rare:0.10, epic:0.05, unique:0.01, legendary:0 };
 
 const POTENTIAL_POOLS = {
   rare: [
-    { key:'atkFlat',  label:'공격력', min:3, max:8,  weight:3 },
-    { key:'defFlat',  label:'방어력', min:3, max:8,  weight:3 },
-    { key:'hpFlat',   label:'HP',    min:10,max:30, weight:3 },
-    { key:'critFlat', label:'크리율', min:1, max:3,  weight:2 },
+    { key:'atkFlat',  min:3, max:8,  weight:3 },
+    { key:'defFlat',  min:3, max:8,  weight:3 },
+    { key:'hpFlat',   min:10,max:30, weight:3 },
+    { key:'critFlat', min:1, max:3,  weight:2 },
   ],
   epic: [
-    { key:'atkPct',  label:'공격력', min:3, max:6,  weight:3 },
-    { key:'defPct',  label:'방어력', min:3, max:6,  weight:3 },
-    { key:'hpPct',   label:'HP',    min:3, max:6,  weight:3 },
-    { key:'critDmg', label:'크리뎀', min:3, max:8,  weight:2 },
-    { key:'allStat', label:'올스탯', min:2, max:4,  weight:1 },
+    { key:'atkPct',  min:3, max:6,  weight:3 },
+    { key:'defPct',  min:3, max:6,  weight:3 },
+    { key:'hpPct',   min:3, max:6,  weight:3 },
+    { key:'critDmg', min:3, max:8,  weight:2 },
+    { key:'allStat', min:2, max:4,  weight:1 },
   ],
   unique: [
-    { key:'atkPct',  label:'공격력', min:5, max:9,  weight:3 },
-    { key:'defPct',  label:'방어력', min:5, max:9,  weight:3 },
-    { key:'hpPct',   label:'HP',    min:5, max:9,  weight:3 },
-    { key:'critDmg', label:'크리뎀', min:6, max:12, weight:2 },
-    { key:'allStat', label:'올스탯', min:3, max:6,  weight:2 },
-    { key:'bossDmg', label:'보스뎀', min:4, max:10, weight:1 },
+    { key:'atkPct',  min:5, max:9,  weight:3 },
+    { key:'defPct',  min:5, max:9,  weight:3 },
+    { key:'hpPct',   min:5, max:9,  weight:3 },
+    { key:'critDmg', min:6, max:12, weight:2 },
+    { key:'allStat', min:3, max:6,  weight:2 },
+    { key:'bossDmg', min:4, max:10, weight:1 },
   ],
   legendary: [
-    { key:'atkPct',  label:'공격력', min:7, max:12, weight:3 },
-    { key:'defPct',  label:'방어력', min:7, max:12, weight:3 },
-    { key:'hpPct',   label:'HP',    min:7, max:12, weight:2 },
-    { key:'critDmg', label:'크리뎀', min:10,max:20, weight:2 },
-    { key:'allStat', label:'올스탯', min:5, max:9,  weight:2 },
-    { key:'bossDmg', label:'보스뎀', min:8, max:15, weight:2 },
-    { key:'dmg',     label:'데미지', min:5, max:10, weight:1 },
+    { key:'atkPct',  min:7, max:12, weight:3 },
+    { key:'defPct',  min:7, max:12, weight:3 },
+    { key:'hpPct',   min:7, max:12, weight:2 },
+    { key:'critDmg', min:10,max:20, weight:2 },
+    { key:'allStat', min:5, max:9,  weight:2 },
+    { key:'bossDmg', min:8, max:15, weight:2 },
+    { key:'dmg',     min:5, max:10, weight:1 },
   ],
 };
 
@@ -599,37 +965,37 @@ const FLAME_NAMES = { small:'작은 불꽃', master:'명장의 불꽃', eternal:
 const FLAME_COLORS = { small:'#aaaaaa', master:'#88ccff', eternal:'#ffcc44', powerful:'#ff6644' };
 
 const FLAME_POOLS = {
-  small:    { lines:4, options:[
-                { key:'atkFlat',  min:1, max:3,  weight:3 },
-                { key:'defFlat',  min:1, max:3,  weight:3 },
-                { key:'hpFlat',   min:5, max:15, weight:3 },
-                { key:'critFlat', min:1, max:2,  weight:1 },
-                { key:'allStat',  min:1, max:2,  weight:1 },
-              ]},
-  master:   { lines:4, options:[
-                { key:'atkFlat',  min:3, max:6,  weight:3 },
-                { key:'defFlat',  min:3, max:6,  weight:3 },
-                { key:'hpFlat',   min:15,max:30, weight:3 },
-                { key:'critFlat', min:1, max:3,  weight:2 },
-                { key:'allStat',  min:2, max:4,  weight:2 },
-              ]},
-  eternal:  { lines:4, options:[
-                { key:'atkFlat',  min:5, max:10, weight:3 },
-                { key:'defFlat',  min:5, max:10, weight:3 },
-                { key:'hpFlat',   min:25,max:50, weight:2 },
-                { key:'allStat',  min:3, max:6,  weight:2 },
-                { key:'atkPct',   min:2, max:4,  weight:1 },
-                { key:'bossDmg',  min:2, max:5,  weight:1 },
-              ]},
-  powerful: { lines:4, options:[
-                { key:'atkFlat',  min:8, max:15, weight:2 },
-                { key:'defFlat',  min:8, max:15, weight:2 },
-                { key:'hpFlat',   min:40,max:80, weight:2 },
-                { key:'allStat',  min:5, max:9,  weight:3 },
-                { key:'atkPct',   min:3, max:6,  weight:2 },
-                { key:'bossDmg',  min:4, max:8,  weight:2 },
-                { key:'dmg',      min:2, max:5,  weight:1 },
-              ]},
+  small:   { lines:4, options:[
+    { key:'atkFlat',  min:1, max:3,  weight:3 },
+    { key:'defFlat',  min:1, max:3,  weight:3 },
+    { key:'hpFlat',   min:5, max:15, weight:3 },
+    { key:'critFlat', min:1, max:2,  weight:1 },
+    { key:'allStat',  min:1, max:2,  weight:1 },
+  ]},
+  master:  { lines:4, options:[
+    { key:'atkFlat',  min:3, max:6,  weight:3 },
+    { key:'defFlat',  min:3, max:6,  weight:3 },
+    { key:'hpFlat',   min:15,max:30, weight:3 },
+    { key:'critFlat', min:1, max:3,  weight:2 },
+    { key:'allStat',  min:2, max:4,  weight:2 },
+  ]},
+  eternal: { lines:4, options:[
+    { key:'atkFlat',  min:5, max:10, weight:3 },
+    { key:'defFlat',  min:5, max:10, weight:3 },
+    { key:'hpFlat',   min:25,max:50, weight:2 },
+    { key:'allStat',  min:3, max:6,  weight:2 },
+    { key:'atkPct',   min:2, max:4,  weight:1 },
+    { key:'bossDmg',  min:2, max:5,  weight:1 },
+  ]},
+  powerful:{ lines:4, options:[
+    { key:'atkFlat',  min:8, max:15, weight:2 },
+    { key:'defFlat',  min:8, max:15, weight:2 },
+    { key:'hpFlat',   min:40,max:80, weight:2 },
+    { key:'allStat',  min:5, max:9,  weight:3 },
+    { key:'atkPct',   min:3, max:6,  weight:2 },
+    { key:'bossDmg',  min:4, max:8,  weight:2 },
+    { key:'dmg',      min:2, max:5,  weight:1 },
+  ]},
 };
 
 const FLAME_PRICES = { small:50, master:200, eternal:500, powerful:1500 };
@@ -646,11 +1012,14 @@ const MAX_ENHANCE = 10;
 const PRICE_CUBE = 100;
 const PRICE_ADD_CUBE = 150;
 
-/* 스킬 설정 */
-const SKILL_PERIOD = 4;       // 4번째 공격마다 강타
-const SKILL_DMG_MULT = 3;     // 3배 데미지
+const SKILL_PERIOD = 4;
+const SKILL_DMG_MULT = 3;
 
-/* 콤보 보너스 — kill 누적 단계별 골드/드랍률 배수 */
+const ELITE_INTERVAL = 30;   // 30 처치마다 엘리트
+const ELITE_HP_MULT = 5;
+const ELITE_ATK_MULT = 2;
+const ELITE_GOLD_MULT = 5;
+
 const COMBO_TIERS = [
   { at: 0,   goldMult: 1.0, dropBonus: 0,    label: '' },
   { at: 10,  goldMult: 1.2, dropBonus: 0.05, label: '+20% G' },
@@ -659,28 +1028,110 @@ const COMBO_TIERS = [
   { at: 100, goldMult: 2.5, dropBonus: 0.25, label: '+150% G · +25% 드랍' },
 ];
 
+/* 퀘스트 정의 */
+const QUEST_TEMPLATES = [
+  { id:'q_slime_20',   type:'kill',  target:'슬라임',     count:20, name:'슬라임 처치 20',  reward:{gold:200, materials:{slime_jelly:5}} },
+  { id:'q_slime_100',  type:'kill',  target:'슬라임',     count:100, name:'슬라임 토벌대장', reward:{gold:1000, consumables:{cube:3}} },
+  { id:'q_wolf_15',    type:'kill',  target:'늑대',       count:15, name:'늑대 사냥꾼',      reward:{gold:500, materials:{wolf_fang:5}} },
+  { id:'q_wolf_50',    type:'kill',  target:'늑대',       count:50, name:'알파 헌터',        reward:{gold:1500, consumables:{flame_master:1}} },
+  { id:'q_golem_10',   type:'kill',  target:'광물 골렘',  count:10, name:'골렘 토벌',        reward:{gold:1500, consumables:{cube:5}} },
+  { id:'q_golem_30',   type:'kill',  target:'광물 골렘',  count:30, name:'광산의 지배자',    reward:{gold:5000, consumables:{flame_eternal:1}} },
+  { id:'q_craft_3',    type:'craft', count:3,  name:'장인의 길',     reward:{gold:300, consumables:{cube:2}} },
+  { id:'q_craft_10',   type:'craft', count:10, name:'명장의 길',     reward:{gold:1500, consumables:{addCube:3}} },
+  { id:'q_level_5',    type:'level', target:5,  name:'수련생',        reward:{gold:500} },
+  { id:'q_level_10',   type:'level', target:10, name:'베테랑',        reward:{gold:2000, consumables:{flame_master:1}} },
+  { id:'q_level_20',   type:'level', target:20, name:'영웅',          reward:{gold:8000, consumables:{flame_powerful:1}} },
+  { id:'q_combo_25',   type:'combo', target:25,  name:'연쇄전사',     reward:{gold:300, consumables:{cube:2}} },
+  { id:'q_combo_100',  type:'combo', target:100, name:'광전사',       reward:{gold:2500, consumables:{flame_eternal:1}} },
+  { id:'q_enh_5',      type:'enhance', target:5,  name:'강화 견습생', reward:{gold:800, consumables:{cube:3}} },
+  { id:'q_enh_10',     type:'enhance', target:10, name:'강화의 신',   reward:{gold:5000, consumables:{flame_powerful:1}} },
+  { id:'q_legendary',  type:'legendary',          name:'레전더리 추적', reward:{gold:3000, consumables:{flame_powerful:1}} },
+  { id:'q_elite_3',    type:'elite', count:3,    name:'엘리트 헌터',  reward:{gold:1500, consumables:{cube:5}} },
+];
+
 /* =========================================================================
    [B] 상태
    ========================================================================= */
 
-const state = {
-  player: { level:1, exp:0, hp:100, atkBase:8, defBase:3, gold:200 },
-  equipment: { weapon:null, armor:null, accessory:null },
-  inventory: [],
-  materials: { slime_jelly:0, wolf_fang:0, iron_ore:0, magic_dust:0 },
-  consumables: {
-    cube:0, addCube:0,
-    flame_small:0, flame_master:0, flame_eternal:0, flame_powerful:0,
-  },
-  currentMap: null,
-  combat: { monsterHp:0, monsterMaxHp:0, kills:0, combo:0, skillCounter:0 },
-  log: [],
-  activeTab: 'craft',
-  uidCounter: 1,
-};
+function makeInitialState() {
+  return {
+    player: { level:1, exp:0, hp:100, atkBase:8, defBase:3, gold:200 },
+    equipment: {
+      weapon:null, armor:null, accessory:null,
+      helmet:null, gloves:null, boots:null, cape:null,
+    },
+    inventory: [],
+    materials: { slime_jelly:0, wolf_fang:0, iron_ore:0, magic_dust:0 },
+    consumables: {
+      cube:0, addCube:0,
+      flame_small:0, flame_master:0, flame_eternal:0, flame_powerful:0,
+    },
+    currentMap: null,
+    combat: { monsterHp:0, monsterMaxHp:0, kills:0, killsInMap:0, combo:0, skillCounter:0, isElite:false, nextIsElite:false },
+    log: [],
+    activeTab: 'craft',
+    uidCounter: 1,
+    quests: { progress: {}, completed: [], rewarded: [] },
+    stats: { totalKills:0, totalGold:0, totalCrafts:0, eliteKills:0, maxCombo:0, maxEnhance:0 },
+  };
+}
 
+let state = makeInitialState();
 let huntInterval = null;
 let speedMultiplier = 1;
+let canSave = false;
+
+/* =========================================================================
+   [Save / Load]
+   ========================================================================= */
+
+function saveGame() {
+  if (!canSave) return;
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    flashSaveInd();
+  } catch (e) { console.error('Save failed', e); }
+}
+
+function flashSaveInd() {
+  const el = document.getElementById('saveInd');
+  el.textContent = '💾 저장됨';
+  el.classList.add('flash');
+  clearTimeout(flashSaveInd._t);
+  flashSaveInd._t = setTimeout(() => {
+    el.textContent = '💾 자동 저장 활성';
+    el.classList.remove('flash');
+  }, 800);
+}
+
+function loadGame() {
+  try {
+    const json = localStorage.getItem(SAVE_KEY);
+    if (!json) return false;
+    const data = JSON.parse(json);
+    if (!data.player || !data.equipment) return false;
+    // 누락 필드 보정
+    state = Object.assign(makeInitialState(), data);
+    state.equipment = Object.assign(makeInitialState().equipment, data.equipment || {});
+    state.materials = Object.assign(makeInitialState().materials, data.materials || {});
+    state.consumables = Object.assign(makeInitialState().consumables, data.consumables || {});
+    state.quests = Object.assign({progress:{},completed:[],rewarded:[]}, data.quests || {});
+    state.stats = Object.assign({totalKills:0,totalGold:0,totalCrafts:0,eliteKills:0,maxCombo:0,maxEnhance:0}, data.stats || {});
+    state.combat = Object.assign({monsterHp:0,monsterMaxHp:0,kills:0,killsInMap:0,combo:0,skillCounter:0,isElite:false,nextIsElite:false}, data.combat || {});
+    state.currentMap = null; // 사냥은 항상 정지로 시작
+    state.log = data.log || [];
+    return true;
+  } catch (e) {
+    console.error('Load failed', e);
+    return false;
+  }
+}
+
+function resetGame() {
+  if (!confirm('정말 초기화하시겠습니까?\n모든 진행 데이터가 영구 삭제됩니다.')) return;
+  localStorage.removeItem(SAVE_KEY);
+  location.reload();
+}
 
 /* =========================================================================
    [J] 유틸
@@ -695,10 +1146,31 @@ function pickWeighted(arr) {
   return arr[arr.length-1];
 }
 function genUid() { return 'i' + (state.uidCounter++); }
+function fmt(n) {
+  n = Math.floor(n);
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 10000)   return (n/1000).toFixed(1) + 'K';
+  return n.toLocaleString('en-US');
+}
+
 function log(msg, cls='') {
   state.log.unshift({ msg, cls });
-  if (state.log.length > 50) state.log.pop();
+  if (state.log.length > 60) state.log.pop();
 }
+
+function showToast(msg, type='info', durMs=2800) {
+  const c = document.getElementById('toastContainer');
+  const div = document.createElement('div');
+  div.className = 'toast ' + type;
+  div.textContent = msg;
+  c.appendChild(div);
+  requestAnimationFrame(() => div.classList.add('show'));
+  setTimeout(() => {
+    div.classList.remove('show');
+    setTimeout(() => div.remove(), 350);
+  }, durMs);
+}
+
 function tickIntervalMs() { return 1000 / speedMultiplier; }
 function scaledDelay(ms)  { return ms / speedMultiplier; }
 
@@ -739,7 +1211,7 @@ function getTotals() {
     else if (o.key === 'dmg')      dmg += o.value;
   }
 
-  for (const slot of ['weapon','armor','accessory']) {
+  for (const slot of SLOT_ORDER) {
     const item = state.equipment[slot];
     if (!item) continue;
     const enhMult = 1 + item.enhanceLevel * 0.2;
@@ -764,7 +1236,7 @@ function clampHp() {
 }
 
 /* =========================================================================
-   [D] 아이템 생성 (제작)
+   [D] 제작
    ========================================================================= */
 
 function rollOptionsForTier(tier) {
@@ -797,12 +1269,16 @@ function canCraft(templateId) {
 }
 
 function craft(templateId) {
-  if (!canCraft(templateId)) { log('재료가 부족합니다.', 'fail'); return; }
+  if (!canCraft(templateId)) { showToast('재료 부족', 'warn'); return; }
   const r = ITEM_TEMPLATES[templateId].recipe;
   for (const mat in r) state.materials[mat] -= r[mat];
   const item = createItemInstance(templateId);
   state.inventory.push(item);
-  log(`🔨 ${ITEM_TEMPLATES[templateId].name} 제작 완료! (옵션 ${item.options.length}개)`, 'win');
+  state.stats.totalCrafts++;
+  log(`🔨 ${ITEM_TEMPLATES[templateId].name} 제작 완료`, 'win');
+  showToast(`🔨 ${ITEM_TEMPLATES[templateId].name} 제작!`, 'success', 1800);
+  questProgressCraft();
+  saveGame();
   render();
 }
 
@@ -815,18 +1291,22 @@ function enhanceCost(level) { return (level + 1) * 20; }
 function enhance(uid) {
   const item = findItem(uid);
   if (!item) return;
-  if (item.enhanceLevel >= MAX_ENHANCE) { log('이미 최대 강화입니다.', 'fail'); return; }
+  if (item.enhanceLevel >= MAX_ENHANCE) { showToast('이미 최대 강화', 'warn'); return; }
   const cost = enhanceCost(item.enhanceLevel);
-  if (state.player.gold < cost) { log(`강화에 ${cost}골드 필요`, 'fail'); return; }
+  if (state.player.gold < cost) { showToast(`${cost}G 필요`, 'warn'); return; }
   state.player.gold -= cost;
   const entry = ENHANCE_TABLE[item.enhanceLevel];
   const r = Math.random();
   if (r < entry.success) {
     item.enhanceLevel++;
+    if (item.enhanceLevel > state.stats.maxEnhance) state.stats.maxEnhance = item.enhanceLevel;
     log(`✨ 강화 성공! +${item.enhanceLevel}`, 'win');
+    if (item.enhanceLevel >= 10) showToast(`🌟 +${item.enhanceLevel} 달성!`, 'epic', 3500);
+    questProgressEnhance(item.enhanceLevel);
   } else if (r < entry.success + entry.destroy) {
     removeItem(uid);
     log(`💥 강화 실패 — 아이템 파괴!`, 'fail');
+    showToast('💥 아이템 파괴', 'warn');
   } else {
     if (item.enhanceLevel >= 5) {
       item.enhanceLevel--;
@@ -835,7 +1315,9 @@ function enhance(uid) {
       log(`⚠️ 강화 실패 (유지)`, 'fail');
     }
   }
-  clampHp(); render();
+  clampHp();
+  saveGame();
+  render();
 }
 
 /* =========================================================================
@@ -860,7 +1342,7 @@ function applyCube(uid, isAdditional) {
   const slotsKey = isAdditional ? 'addPotentials' : 'potentials';
   const cubeName = isAdditional ? '에디셔널 큐브' : '잠재 큐브';
 
-  if (state.consumables[stockKey] <= 0) { log(`${cubeName} 부족`, 'fail'); return; }
+  if (state.consumables[stockKey] <= 0) { showToast(`${cubeName} 부족`, 'warn'); return; }
   state.consumables[stockKey]--;
 
   const cur = item[gradeKey];
@@ -869,12 +1351,17 @@ function applyCube(uid, isAdditional) {
     const idx = GRADES.indexOf(cur);
     item[gradeKey] = GRADES[idx + 1];
     log(`🌟 등급 상승! ${GRADE_NAMES[cur]} → ${GRADE_NAMES[item[gradeKey]]}`, item[gradeKey]);
+    showToast(`🌟 등급 상승: ${GRADE_NAMES[item[gradeKey]]}!`,
+      item[gradeKey]==='legendary' ? 'success' : 'epic', 3500);
+    if (item[gradeKey] === 'legendary') questProgressLegendary();
   }
 
   item[slotsKey] = rollPotentialLines(item[gradeKey]);
   const filled = item[slotsKey].filter(x => x).length;
-  log(`🧪 ${cubeName} 사용 [${GRADE_NAMES[item[gradeKey]]}] ${filled}줄`);
-  clampHp(); render();
+  log(`🧪 ${cubeName} [${GRADE_NAMES[item[gradeKey]]}] ${filled}줄`);
+  clampHp();
+  saveGame();
+  render();
 }
 
 function rollFlame(flameType) {
@@ -891,12 +1378,15 @@ function useFlame(uid, flameType) {
   const item = findItem(uid);
   if (!item) return;
   const stockKey = 'flame_' + flameType;
-  if (state.consumables[stockKey] <= 0) { log(`${FLAME_NAMES[flameType]} 부족`, 'fail'); return; }
+  if (state.consumables[stockKey] <= 0) { showToast(`${FLAME_NAMES[flameType]} 부족`, 'warn'); return; }
   state.consumables[stockKey]--;
   item.flame = rollFlame(flameType);
   item.flameType = flameType;
   log(`🔥 ${FLAME_NAMES[flameType]} 적용`, flameType === 'powerful' ? 'legendary' : '');
-  clampHp(); render();
+  showToast(`🔥 ${FLAME_NAMES[flameType]} 적용!`, flameType === 'powerful' ? 'epic' : 'success');
+  clampHp();
+  saveGame();
+  render();
 }
 
 /* =========================================================================
@@ -905,14 +1395,14 @@ function useFlame(uid, flameType) {
 
 function findItem(uid) {
   if (!uid) return null;
-  for (const slot of ['weapon','armor','accessory']) {
+  for (const slot of SLOT_ORDER) {
     if (state.equipment[slot]?.uid === uid) return state.equipment[slot];
   }
   return state.inventory.find(i => i.uid === uid) || null;
 }
 
 function removeItem(uid) {
-  for (const slot of ['weapon','armor','accessory']) {
+  for (const slot of SLOT_ORDER) {
     if (state.equipment[slot]?.uid === uid) { state.equipment[slot] = null; return; }
   }
   state.inventory = state.inventory.filter(i => i.uid !== uid);
@@ -927,14 +1417,18 @@ function equip(uid) {
   if (state.equipment[slot]) state.inventory.push(state.equipment[slot]);
   state.equipment[slot] = item;
   log(`🛡️ ${ITEM_TEMPLATES[item.templateId].name} 장착`);
-  clampHp(); render();
+  clampHp();
+  saveGame();
+  render();
 }
 
 function unequip(slot) {
   if (!state.equipment[slot]) return;
   state.inventory.push(state.equipment[slot]);
   state.equipment[slot] = null;
-  clampHp(); render();
+  clampHp();
+  saveGame();
+  render();
 }
 
 function getSellPrice(item) {
@@ -955,13 +1449,10 @@ function sellItem(uid) {
   const price = getSellPrice(item);
   removeItem(uid);
   state.player.gold += price;
-  log(`💰 ${ITEM_TEMPLATES[item.templateId].name} 판매 +${price}G`, 'gold');
+  log(`💰 ${ITEM_TEMPLATES[item.templateId].name} 판매 +${fmt(price)}G`, 'gold');
+  saveGame();
   render();
 }
-
-/* =========================================================================
-   [H] 상점
-   ========================================================================= */
 
 function sellMaterial(matId, qty) {
   const have = state.materials[matId] || 0;
@@ -970,7 +1461,8 @@ function sellMaterial(matId, qty) {
   const price = qty * MATERIALS[matId].sellPrice;
   state.materials[matId] -= qty;
   state.player.gold += price;
-  log(`💰 ${MATERIALS[matId].name} x${qty} 판매 +${price}G`, 'gold');
+  log(`💰 ${MATERIALS[matId].name} x${qty} 판매 +${fmt(price)}G`, 'gold');
+  saveGame();
   render();
 }
 
@@ -979,15 +1471,112 @@ function buyAddCube(qty) { buyItem('addCube', PRICE_ADD_CUBE, qty, '에디셔널
 function buyFlame(type, qty) { buyItem('flame_'+type, FLAME_PRICES[type], qty, FLAME_NAMES[type]); }
 function buyItem(stockKey, unitPrice, qty, name) {
   const cost = unitPrice * qty;
-  if (state.player.gold < cost) { log('골드 부족', 'fail'); return; }
+  if (state.player.gold < cost) { showToast('골드 부족', 'warn'); return; }
   state.player.gold -= cost;
   state.consumables[stockKey] += qty;
-  log(`🛒 ${name} x${qty} 구매 (-${cost}G)`);
+  log(`🛒 ${name} x${qty} 구매 (-${fmt(cost)}G)`);
+  saveGame();
   render();
 }
 
 /* =========================================================================
-   [SCENE / 애니메이션]
+   [Q] 퀘스트
+   ========================================================================= */
+
+function getQuestT(id) { return QUEST_TEMPLATES.find(q => q.id === id); }
+
+function questPg(id) {
+  if (state.quests.progress[id] === undefined) state.quests.progress[id] = 0;
+  return state.quests.progress[id];
+}
+
+function questIsComplete(id) {
+  if (state.quests.completed.includes(id)) return true;
+  const t = getQuestT(id);
+  if (!t) return false;
+  const pg = questPg(id);
+  if (t.type === 'kill' || t.type === 'craft' || t.type === 'elite')
+    return pg >= t.count;
+  if (t.type === 'level')
+    return state.player.level >= t.target;
+  if (t.type === 'combo')
+    return state.stats.maxCombo >= t.target;
+  if (t.type === 'enhance')
+    return state.stats.maxEnhance >= t.target;
+  if (t.type === 'legendary')
+    return state.quests.progress[id] >= 1;
+  return false;
+}
+
+function tryClaimQuest(id) {
+  if (!questIsComplete(id)) return;
+  if (state.quests.rewarded.includes(id)) return;
+  const t = getQuestT(id);
+  state.quests.rewarded.push(id);
+  if (!state.quests.completed.includes(id)) state.quests.completed.push(id);
+  const r = t.reward;
+  if (r.gold) state.player.gold += r.gold;
+  if (r.materials) for (const m in r.materials) state.materials[m] = (state.materials[m]||0) + r.materials[m];
+  if (r.consumables) for (const c in r.consumables) state.consumables[c] = (state.consumables[c]||0) + r.consumables[c];
+  log(`✅ 퀘스트 완료: ${t.name}`, 'win');
+  showToast(`✅ 퀘스트 완료: ${t.name}`, 'success', 3000);
+}
+
+function questProgressKill(monsterName, isElite) {
+  for (const t of QUEST_TEMPLATES) {
+    if (t.type === 'kill' && t.target === monsterName && !state.quests.rewarded.includes(t.id)) {
+      state.quests.progress[t.id] = (state.quests.progress[t.id]||0) + 1;
+      tryClaimQuest(t.id);
+    }
+  }
+  if (isElite) {
+    for (const t of QUEST_TEMPLATES) {
+      if (t.type === 'elite' && !state.quests.rewarded.includes(t.id)) {
+        state.quests.progress[t.id] = (state.quests.progress[t.id]||0) + 1;
+        tryClaimQuest(t.id);
+      }
+    }
+  }
+}
+
+function questProgressCraft() {
+  for (const t of QUEST_TEMPLATES) {
+    if (t.type === 'craft' && !state.quests.rewarded.includes(t.id)) {
+      state.quests.progress[t.id] = (state.quests.progress[t.id]||0) + 1;
+      tryClaimQuest(t.id);
+    }
+  }
+}
+
+function questProgressLevel() {
+  for (const t of QUEST_TEMPLATES) {
+    if (t.type === 'level' && !state.quests.rewarded.includes(t.id)) tryClaimQuest(t.id);
+  }
+}
+
+function questProgressCombo() {
+  for (const t of QUEST_TEMPLATES) {
+    if (t.type === 'combo' && !state.quests.rewarded.includes(t.id)) tryClaimQuest(t.id);
+  }
+}
+
+function questProgressEnhance() {
+  for (const t of QUEST_TEMPLATES) {
+    if (t.type === 'enhance' && !state.quests.rewarded.includes(t.id)) tryClaimQuest(t.id);
+  }
+}
+
+function questProgressLegendary() {
+  for (const t of QUEST_TEMPLATES) {
+    if (t.type === 'legendary' && !state.quests.rewarded.includes(t.id)) {
+      state.quests.progress[t.id] = 1;
+      tryClaimQuest(t.id);
+    }
+  }
+}
+
+/* =========================================================================
+   [SCENE]
    ========================================================================= */
 
 function updateScene() {
@@ -1000,11 +1589,10 @@ function updateScene() {
   const monster = document.getElementById('monster');
   if (map) {
     monster.classList.add('show');
-    document.getElementById('monsterEmoji').textContent = MONSTER_EMOJIS[map.monster] || '👹';
-    document.getElementById('monsterName').textContent = map.monster + (map.isBoss ? ' 👹' : '');
     document.getElementById('skillBar').classList.add('show');
   } else {
     monster.classList.remove('show');
+    monster.classList.remove('elite');
     document.getElementById('skillBar').classList.remove('show');
   }
 
@@ -1019,55 +1607,55 @@ function getSceneProps(map) {
       <div class="cloud" style="top:18px; animation-delay: -10s;">☁️</div>
       <div class="cloud" style="top:40px; font-size:30px; animation-delay: -40s;">☁️</div>
       <div class="cloud" style="top:25px; animation-delay: -25s;">☁️</div>
-      <div class="prop" style="left:6%;  bottom:40px; font-size:56px;">🏠</div>
-      <div class="prop" style="left:18%; bottom:45px; font-size:46px;">⛪</div>
-      <div class="prop" style="right:8%; bottom:40px; font-size:56px;">🏪</div>
-      <div class="prop" style="right:24%;bottom:42px; font-size:50px;">🛖</div>
-      <div class="prop" style="left:45%; bottom:50px; font-size:30px;">🌳</div>
-      <div class="prop" style="left:38%; bottom:38px; font-size:24px;">🌷</div>
-      <div class="prop" style="right:38%;bottom:38px; font-size:24px;">🌼</div>
-      <div class="prop" style="left:50%; bottom:40px; font-size:36px; transform:translateX(-50%);">🪧</div>
+      <div class="prop" style="left:5%;  bottom:50px; font-size:56px;">🏠</div>
+      <div class="prop" style="left:17%; bottom:55px; font-size:46px;">⛪</div>
+      <div class="prop" style="right:8%; bottom:50px; font-size:56px;">🏪</div>
+      <div class="prop" style="right:22%;bottom:50px; font-size:50px;">🛖</div>
+      <div class="prop" style="left:45%; bottom:60px; font-size:30px;">🌳</div>
+      <div class="prop" style="left:37%; bottom:48px; font-size:24px;">🌷</div>
+      <div class="prop" style="right:36%;bottom:48px; font-size:24px;">🌼</div>
+      <div class="prop" style="left:50%; bottom:48px; font-size:36px; transform:translateX(-50%);">🪧</div>
     `;
   }
   if (map.id === 'meadow') {
     return `
       <div class="cloud" style="top:15px; animation-delay: -5s;">☁️</div>
       <div class="cloud" style="top:35px; animation-delay: -30s;">☁️</div>
-      <div class="prop" style="left:5%;  bottom:25px; font-size:32px;">🌼</div>
-      <div class="prop" style="left:15%; bottom:30px; font-size:28px;">🌸</div>
-      <div class="prop" style="left:40%; bottom:25px; font-size:30px;">🌱</div>
-      <div class="prop" style="right:8%; bottom:30px; font-size:34px;">🌷</div>
-      <div class="prop" style="right:18%;bottom:28px; font-size:26px;">🦋</div>
-      <div class="prop" style="left:60%; bottom:40px; font-size:30px;">🦋</div>
-      <div class="prop" style="left:30%; bottom:50px; font-size:24px; opacity:0.7;">🐝</div>
+      <div class="prop" style="left:5%;  bottom:35px; font-size:32px;">🌼</div>
+      <div class="prop" style="left:14%; bottom:42px; font-size:28px;">🌸</div>
+      <div class="prop" style="left:40%; bottom:38px; font-size:30px;">🌱</div>
+      <div class="prop" style="right:8%; bottom:40px; font-size:34px;">🌷</div>
+      <div class="prop" style="right:18%;bottom:38px; font-size:26px;">🦋</div>
+      <div class="prop" style="left:60%; bottom:55px; font-size:30px;">🦋</div>
+      <div class="prop" style="left:30%; bottom:65px; font-size:24px; opacity:0.7;">🐝</div>
     `;
   }
   if (map.id === 'forest') {
     return `
-      <div class="prop" style="left:2%;  bottom:25px; font-size:90px;">🌲</div>
-      <div class="prop" style="left:15%; bottom:25px; font-size:75px;">🌳</div>
-      <div class="prop" style="right:2%; bottom:25px; font-size:90px;">🌲</div>
-      <div class="prop" style="right:15%;bottom:25px; font-size:70px;">🌳</div>
-      <div class="prop" style="left:42%; bottom:30px; font-size:50px; opacity:0.6;">🌲</div>
-      <div class="prop" style="left:55%; bottom:30px; font-size:50px; opacity:0.6;">🌳</div>
-      <div class="prop" style="top:30px; left:40%;  font-size:28px;">🌙</div>
+      <div class="prop" style="left:2%;  bottom:35px; font-size:90px;">🌲</div>
+      <div class="prop" style="left:15%; bottom:35px; font-size:75px;">🌳</div>
+      <div class="prop" style="right:2%; bottom:35px; font-size:90px;">🌲</div>
+      <div class="prop" style="right:15%;bottom:35px; font-size:70px;">🌳</div>
+      <div class="prop" style="left:42%; bottom:40px; font-size:50px; opacity:0.6;">🌲</div>
+      <div class="prop" style="left:55%; bottom:40px; font-size:50px; opacity:0.6;">🌳</div>
+      <div class="prop" style="top:30px; left:40%;  font-size:30px;">🌙</div>
       <div class="prop" style="top:80px; left:75%;  font-size:18px;">✨</div>
       <div class="prop" style="top:60px; left:20%;  font-size:18px;">✨</div>
-      <div class="prop" style="left:30%; bottom:35px; font-size:20px;">🍄</div>
-      <div class="prop" style="right:32%;bottom:30px; font-size:22px;">🍄</div>
+      <div class="prop" style="left:30%; bottom:48px; font-size:20px;">🍄</div>
+      <div class="prop" style="right:32%;bottom:42px; font-size:22px;">🍄</div>
     `;
   }
   if (map.id === 'cave') {
     return `
-      <div class="prop torch" style="left:6%;  bottom:30px; font-size:38px;">🔥</div>
-      <div class="prop torch" style="right:6%; bottom:30px; font-size:38px;">🔥</div>
-      <div class="prop" style="left:30%; bottom:35px; font-size:32px;">🪨</div>
-      <div class="prop" style="right:30%;bottom:30px; font-size:34px;">🪨</div>
-      <div class="prop" style="left:50%; bottom:50px; font-size:24px; transform:translateX(-50%);">💎</div>
-      <div class="prop" style="top:18px; left:15%; font-size:26px;">🦇</div>
-      <div class="prop" style="top:30px; right:25%; font-size:22px;">🦇</div>
-      <div class="prop" style="left:42%; bottom:40px; font-size:18px;">💎</div>
-      <div class="prop" style="right:42%;bottom:38px; font-size:18px;">💎</div>
+      <div class="prop torch" style="left:5%;  bottom:40px; font-size:42px;">🔥</div>
+      <div class="prop torch" style="right:5%; bottom:40px; font-size:42px;">🔥</div>
+      <div class="prop" style="left:28%; bottom:45px; font-size:34px;">🪨</div>
+      <div class="prop" style="right:28%;bottom:40px; font-size:36px;">🪨</div>
+      <div class="prop" style="left:50%; bottom:60px; font-size:26px; transform:translateX(-50%);">💎</div>
+      <div class="prop" style="top:18px; left:15%; font-size:28px;">🦇</div>
+      <div class="prop" style="top:30px; right:25%; font-size:24px;">🦇</div>
+      <div class="prop" style="left:42%; bottom:52px; font-size:18px;">💎</div>
+      <div class="prop" style="right:42%;bottom:48px; font-size:18px;">💎</div>
     `;
   }
   return '';
@@ -1081,9 +1669,13 @@ function updateSceneBars() {
     const mPct = Math.max(0, state.combat.monsterHp / state.combat.monsterMaxHp * 100);
     document.getElementById('monsterHpFill').style.width = mPct + '%';
   }
-  document.getElementById('sceneInfo').textContent = state.currentMap ? `처치 ${state.combat.kills}` : '';
-
-  // 스킬 게이지
+  if (state.currentMap) {
+    const next = ELITE_INTERVAL - (state.combat.killsInMap % ELITE_INTERVAL);
+    document.getElementById('sceneInfo').textContent =
+      `처치 ${state.combat.kills} · 엘리트 ${next === ELITE_INTERVAL ? '곧 등장!' : next + ' 처치 후'}`;
+  } else {
+    document.getElementById('sceneInfo').textContent = '';
+  }
   const skillPct = (state.combat.skillCounter / SKILL_PERIOD) * 100;
   document.getElementById('skillBarFill').style.width = skillPct + '%';
 }
@@ -1128,7 +1720,7 @@ function spawnDamageNumber(dmg, target, opts={}) {
   if (opts.skill) cls += ' skill';
   if (target === 'hero') cls += ' player';
   div.className = cls;
-  div.textContent = (opts.skill ? '💢 ' : (opts.crit ? '💥 ' : '')) + dmg;
+  div.textContent = (opts.skill ? '💢 ' : (opts.crit ? '💥 ' : '')) + fmt(dmg);
   const baseX = target === 'monster' ? 78 : 22;
   div.style.left = (baseX - 4 + Math.random() * 8) + '%';
   div.style.top = (38 + Math.random() * 8) + '%';
@@ -1146,17 +1738,18 @@ function spawnSlash(big=false) {
     div.textContent = ['✦','⚡','✸'][rand(0,2)];
   }
   div.style.left = (big ? 62 : 60 + Math.random() * 10) + '%';
-  div.style.top = (big ? 45 : 40 + Math.random() * 10) + '%';
+  div.style.top  = (big ? 45 : 40 + Math.random() * 10) + '%';
   document.getElementById('effects').appendChild(div);
   setTimeout(() => div.remove(), scaledDelay(big ? 600 : 380));
 }
 
-function flashScreen() {
+function flashScreen(elite=false) {
   const scene = document.getElementById('sceneArea');
-  scene.classList.remove('skill-flash');
+  const cls = elite ? 'elite-flash' : 'skill-flash';
+  scene.classList.remove(cls);
   void scene.offsetWidth;
-  scene.classList.add('skill-flash');
-  setTimeout(() => scene.classList.remove('skill-flash'), scaledDelay(400));
+  scene.classList.add(cls);
+  setTimeout(() => scene.classList.remove(cls), scaledDelay(elite ? 800 : 400));
 }
 
 function popCombo() {
@@ -1168,7 +1761,7 @@ function popCombo() {
 }
 
 /* =========================================================================
-   [속도 토글]
+   [Speed]
    ========================================================================= */
 
 function setSpeed(s) {
@@ -1180,7 +1773,6 @@ function setSpeed(s) {
     clearInterval(huntInterval);
     huntInterval = setInterval(tick, tickIntervalMs());
   }
-  log(`⏱️ 속도 x${s}`);
 }
 
 /* =========================================================================
@@ -1189,17 +1781,21 @@ function setSpeed(s) {
 
 function startHunt(mapId) {
   const map = MAPS[mapId];
-  if (state.player.level < map.reqLevel) { log(`Lv.${map.reqLevel} 필요`, 'fail'); return; }
+  if (state.player.level < map.reqLevel) { showToast(`Lv.${map.reqLevel} 필요`, 'warn'); return; }
   state.currentMap = mapId;
   state.combat.monsterHp = 0;
   state.combat.monsterMaxHp = map.mHp;
   state.combat.kills = 0;
+  state.combat.killsInMap = 0;
   state.combat.combo = 0;
   state.combat.skillCounter = 0;
+  state.combat.isElite = false;
+  state.combat.nextIsElite = false;
   if (huntInterval) clearInterval(huntInterval);
   huntInterval = setInterval(tick, tickIntervalMs());
   log(`🗺️ ${map.name} 사냥 시작`);
   updateScene();
+  saveGame();
   render();
 }
 
@@ -1209,10 +1805,38 @@ function stopHunt() {
   state.combat.monsterHp = 0;
   state.combat.combo = 0;
   state.combat.skillCounter = 0;
+  state.combat.isElite = false;
   state.player.hp = getTotals().maxHp;
   log('🏘️ 마을로 귀환 (HP 회복)');
   updateScene();
+  saveGame();
   render();
+}
+
+function spawnMonster(map) {
+  const isElite = state.combat.nextIsElite;
+  state.combat.isElite = isElite;
+  state.combat.nextIsElite = false;
+  const mEl = document.getElementById('monster');
+  const eEl = document.getElementById('monsterEmoji');
+  const nEl = document.getElementById('monsterName');
+  if (isElite) {
+    state.combat.monsterHp = map.mHp * ELITE_HP_MULT;
+    state.combat.monsterMaxHp = map.mHp * ELITE_HP_MULT;
+    mEl.classList.add('elite');
+    eEl.textContent = '👑' + (MONSTER_EMOJIS[map.monster] || '👹');
+    nEl.textContent = `엘리트 ${map.monster}`;
+    flashScreen(true);
+    log(`⚠️ 엘리트 ${map.monster} 등장!`, 'elite');
+    showToast(`⚠️ 엘리트 ${map.monster} 등장!`, 'warn', 2500);
+  } else {
+    state.combat.monsterHp = map.mHp;
+    state.combat.monsterMaxHp = map.mHp;
+    mEl.classList.remove('elite');
+    eEl.textContent = MONSTER_EMOJIS[map.monster] || '👹';
+    nEl.textContent = map.monster + (map.isBoss ? ' 👹' : '');
+  }
+  mEl.classList.add('show');
 }
 
 function tick() {
@@ -1220,14 +1844,8 @@ function tick() {
   const map = MAPS[state.currentMap];
   const totals = getTotals();
 
-  if (state.combat.monsterHp <= 0) {
-    state.combat.monsterHp = map.mHp;
-    state.combat.monsterMaxHp = map.mHp;
-    document.getElementById('monster').classList.add('show');
-    document.getElementById('monsterEmoji').textContent = MONSTER_EMOJIS[map.monster] || '👹';
-  }
+  if (state.combat.monsterHp <= 0) spawnMonster(map);
 
-  // 스킬 카운터 증가, SKILL_PERIOD 도달 시 강타 발동
   state.combat.skillCounter++;
   const useSkill = state.combat.skillCounter >= SKILL_PERIOD;
   if (useSkill) state.combat.skillCounter = 0;
@@ -1235,7 +1853,7 @@ function tick() {
   if (useSkill) {
     triggerActorAnim('hero', 'skill', scaledDelay(500));
     spawnSlash(true);
-    flashScreen();
+    flashScreen(false);
   } else {
     triggerActorAnim('hero', 'attacking', scaledDelay(400));
     spawnSlash(false);
@@ -1245,14 +1863,14 @@ function tick() {
   let dmg = Math.max(1, totals.atk - map.mDef);
   if (isCrit) dmg = Math.floor(dmg * (1 + totals.critDmg/100));
   dmg = Math.floor(dmg * (1 + totals.dmg/100));
-  if (map.isBoss) dmg = Math.floor(dmg * (1 + totals.bossDmg/100));
+  if (map.isBoss || state.combat.isElite) dmg = Math.floor(dmg * (1 + totals.bossDmg/100));
   if (useSkill) dmg = Math.floor(dmg * SKILL_DMG_MULT);
 
   state.combat.monsterHp -= dmg;
   spawnDamageNumber(dmg, 'monster', { crit:isCrit, skill:useSkill });
   triggerActorAnim('monster', 'hurt', scaledDelay(350));
-  if (useSkill) log(`💢 강타! ${dmg} 데미지`, 'skill');
-  else if (isCrit) log(`💥 크리티컬! ${dmg} 데미지`, 'crit');
+  if (useSkill) log(`💢 강타! ${fmt(dmg)} 데미지`, 'skill');
+  else if (isCrit) log(`💥 크리티컬! ${fmt(dmg)} 데미지`, 'crit');
 
   updateSceneBars();
 
@@ -1260,11 +1878,11 @@ function tick() {
     triggerActorAnim('monster', 'dying', scaledDelay(600));
     setTimeout(() => onMonsterKill(map), scaledDelay(300));
   } else {
-    // 몬스터 반격: tick interval의 40% 시점
     setTimeout(() => {
       if (!state.currentMap) return;
       triggerActorAnim('monster', 'attacking', scaledDelay(400));
-      const mDmg = Math.max(1, map.mAtk - totals.def);
+      let mDmg = Math.max(1, map.mAtk - totals.def);
+      if (state.combat.isElite) mDmg = Math.floor(mDmg * ELITE_ATK_MULT);
       state.player.hp -= mDmg;
       spawnDamageNumber(mDmg, 'hero', {});
       triggerActorAnim('hero', 'hurt', scaledDelay(350));
@@ -1277,39 +1895,69 @@ function tick() {
 }
 
 function onMonsterKill(map) {
+  const wasElite = state.combat.isElite;
   state.combat.kills++;
+  state.combat.killsInMap++;
   state.combat.combo++;
+  state.stats.totalKills++;
+  if (state.combat.combo > state.stats.maxCombo) state.stats.maxCombo = state.combat.combo;
+  if (wasElite) state.stats.eliteKills++;
   popCombo();
 
   const tier = getComboTier(state.combat.combo);
+  let goldMult = tier.goldMult * (wasElite ? ELITE_GOLD_MULT : 1);
 
-  // 골드 (콤보 배수 적용)
   let gold = rand(map.goldMin, map.goldMax);
-  gold = Math.floor(gold * tier.goldMult);
+  gold = Math.floor(gold * goldMult);
   state.player.gold += gold;
-  log(`⚔️ ${map.monster} 처치 +${gold}G${tier.goldMult>1?` (콤보 x${(tier.goldMult).toFixed(1)})`:''}`, 'gold');
+  state.stats.totalGold += gold;
+  log(`⚔️ ${wasElite?'엘리트 ':''}${map.monster} 처치 +${fmt(gold)}G${tier.goldMult>1?` (콤보 x${tier.goldMult.toFixed(1)})`:''}`, wasElite?'elite':'gold');
 
-  // 드랍 (콤보 드랍보너스 적용)
   for (const drop of map.drops) {
-    const chance = drop.chance + tier.dropBonus;
+    let chance = drop.chance + tier.dropBonus;
+    if (wasElite) chance = Math.min(1, chance * 2);
     if (!rollChance(chance)) continue;
     if (drop.matId) {
-      state.materials[drop.matId] = (state.materials[drop.matId]||0) + 1;
+      state.materials[drop.matId] = (state.materials[drop.matId]||0) + (wasElite ? 2 : 1);
       log(`📦 ${MATERIALS[drop.matId].name} 획득`, 'drop');
     } else if (drop.flame) {
       state.consumables['flame_'+drop.flame]++;
       log(`🔥 ${FLAME_NAMES[drop.flame]} 드랍!`, 'legendary');
+      showToast(`🔥 ${FLAME_NAMES[drop.flame]} 드랍!`, 'epic', 4000);
     }
   }
 
-  // 콤보 마일스톤 알림
-  if ([10, 25, 50, 100].includes(state.combat.combo)) {
-    log(`🔥 ${state.combat.combo} 콤보 달성! ${tier.label}`, 'win');
+  // 엘리트 보너스: 확률적으로 큐브
+  if (wasElite) {
+    if (rollChance(0.5)) {
+      state.consumables.cube++;
+      log(`🧪 잠재 큐브 +1 (엘리트 보너스)`, 'drop');
+    }
+    if (rollChance(0.2)) {
+      state.consumables.addCube++;
+      log(`🧪 에디셔널 큐브 +1 (엘리트 보너스)`, 'drop');
+    }
   }
 
-  gainExp(map.expReward);
+  // 콤보 마일스톤
+  if ([10, 25, 50, 100].includes(state.combat.combo)) {
+    log(`🔥 ${state.combat.combo} 콤보! ${tier.label}`, 'win');
+    showToast(`🔥 ${state.combat.combo} 콤보!`, 'success');
+  }
+
+  gainExp(map.expReward * (wasElite ? 5 : 1));
+
+  // 엘리트 스폰 예약: 매 30 처치마다
+  if (state.combat.killsInMap > 0 && state.combat.killsInMap % ELITE_INTERVAL === 0) {
+    state.combat.nextIsElite = true;
+  }
+
   state.combat.monsterHp = 0;
+
+  questProgressKill(map.monster, wasElite);
+  questProgressCombo();
   updateCombo();
+  saveGame();
   render();
 }
 
@@ -1317,7 +1965,8 @@ function onPlayerDeath() {
   const lost = Math.floor(state.player.gold * 0.1);
   state.player.gold -= lost;
   state.player.hp = getTotals().maxHp;
-  log(`💀 사망! ${lost}G 잃음 (콤보 초기화)`, 'fail');
+  log(`💀 사망! ${fmt(lost)}G 잃음 (콤보 초기화)`, 'fail');
+  showToast(`💀 사망! -${fmt(lost)}G`, 'warn');
   state.combat.combo = 0;
   stopHunt();
 }
@@ -1331,10 +1980,11 @@ function gainExp(amt) {
     state.player.defBase += 1;
     state.player.hp = getTotals().maxHp;
     log(`🎉 레벨업! Lv.${state.player.level}`, 'win');
+    showToast(`🎉 Lv.${state.player.level} 달성!`, 'success', 2500);
+    questProgressLevel();
   }
 }
 
-/* 완화된 곡선: lv * 30 */
 function expForLevel(lv) { return lv * 30; }
 
 /* =========================================================================
@@ -1345,29 +1995,35 @@ function renderPlayer() {
   const p = state.player;
   const t = getTotals();
   const hpPct = (p.hp / t.maxHp) * 100;
+  const expPct = (p.exp / expForLevel(p.level)) * 100;
   document.getElementById('playerPanel').innerHTML = `
-    <div style="display:grid; grid-template-columns: 1.6fr 1fr 1fr 1fr 1fr; gap:14px; align-items:center;">
+    <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.2fr; gap:14px; align-items:center;">
       <div>
-        <div style="font-size:15px; color:#ffcc66; margin-bottom:3px;">🦸 Lv.${p.level} 용사</div>
-        <div class="hp-bar"><div style="width:${hpPct}%"></div></div>
-        <div style="font-size:11px;">HP ${p.hp} / ${t.maxHp}</div>
-        <div style="font-size:11px; color:#aaa;">EXP ${p.exp} / ${expForLevel(p.level)}</div>
+        <div style="font-family:'Black Han Sans',sans-serif; font-size:17px; color:var(--gold); margin-bottom:4px; letter-spacing:1px;">
+          🦸 Lv.${p.level} 용사
+        </div>
+        <div class="hp-bar-big"><div style="width:${hpPct}%"></div></div>
+        <div style="font-size:11px; display:flex; justify-content:space-between;">
+          <span>❤️ ${fmt(p.hp)} / ${fmt(t.maxHp)}</span>
+          <span style="color:var(--muted)">EXP ${fmt(p.exp)} / ${fmt(expForLevel(p.level))}</span>
+        </div>
+        <div class="exp-bar"><div style="width:${expPct}%"></div></div>
       </div>
       <div>
-        <div class="stat-row"><span>공격력</span><span>${t.atk}</span></div>
-        <div class="stat-row"><span>방어력</span><span>${t.def}</span></div>
+        <div class="stat-row"><span>⚔️ 공격력</span><span>${fmt(t.atk)}</span></div>
+        <div class="stat-row"><span>🛡️ 방어력</span><span>${fmt(t.def)}</span></div>
       </div>
       <div>
-        <div class="stat-row"><span>크리율</span><span>${t.crit}%</span></div>
-        <div class="stat-row"><span>크리뎀</span><span>${t.critDmg}%</span></div>
+        <div class="stat-row"><span>💢 크리율</span><span>${t.crit}%</span></div>
+        <div class="stat-row"><span>💥 크리뎀</span><span>${t.critDmg}%</span></div>
       </div>
       <div>
-        <div class="stat-row"><span>데미지</span><span>+${t.dmg}%</span></div>
-        <div class="stat-row"><span>보스뎀</span><span>+${t.bossDmg}%</span></div>
+        <div class="stat-row"><span>📊 데미지</span><span>+${t.dmg}%</span></div>
+        <div class="stat-row"><span>👹 보스뎀</span><span>+${t.bossDmg}%</span></div>
       </div>
       <div>
-        <div class="stat-row"><span>💰 골드</span><span>${p.gold}</span></div>
-        <div class="stat-row"><span>🧪 큐브/에디</span><span>${state.consumables.cube}/${state.consumables.addCube}</span></div>
+        <div class="stat-row"><span>💰 골드</span><span style="color:var(--gold)">${fmt(p.gold)}</span></div>
+        <div class="stat-row"><span>🧪 큐브/에디</span><span>${state.consumables.cube} / ${state.consumables.addCube}</span></div>
       </div>
     </div>
   `;
@@ -1400,7 +2056,19 @@ function renderLeft() {
     flamesHtml += `<div class="mat-row"><span style="color:${FLAME_COLORS[ft]}">${FLAME_NAMES[ft]}</span><span>${state.consumables['flame_'+ft]}</span></div>`;
   }
 
-  document.getElementById('leftPanel').innerHTML = mapsHtml + matsHtml + flamesHtml;
+  let statsHtml = '<h3>📊 통계</h3>' +
+    `<div class="mat-row"><span>총 처치</span><span>${fmt(state.stats.totalKills)}</span></div>` +
+    `<div class="mat-row"><span>엘리트 처치</span><span>${fmt(state.stats.eliteKills)}</span></div>` +
+    `<div class="mat-row"><span>최고 콤보</span><span>${state.stats.maxCombo}</span></div>` +
+    `<div class="mat-row"><span>최고 강화</span><span>+${state.stats.maxEnhance}</span></div>` +
+    `<div class="mat-row"><span>총 골드 획득</span><span>${fmt(state.stats.totalGold)}</span></div>` +
+    `<div class="mat-row"><span>제작 횟수</span><span>${state.stats.totalCrafts}</span></div>`;
+
+  let resetHtml = `<div style="margin-top:10px;text-align:center;">
+    <button class="danger" onclick="resetGame()" style="font-size:10px;">🗑️ 데이터 초기화</button>
+  </div>`;
+
+  document.getElementById('leftPanel').innerHTML = mapsHtml + matsHtml + flamesHtml + statsHtml + resetHtml;
 }
 
 function gradeBadge(grade) {
@@ -1412,21 +2080,55 @@ function renderPotentialLine(slots, grade) {
   return `${gradeBadge(grade)}${lines}`;
 }
 
+function renderPaperDoll() {
+  let html = `<div class="paper-doll">
+    <div class="doll-title">🦸 장착 슬롯</div>
+    <div class="doll-grid">`;
+  // 4-col grid: helmet | armor | weapon | cape
+  //             gloves | boots | accessory | (empty)
+  // Custom order:
+  const slots = ['helmet','armor','weapon','cape','gloves','boots','accessory'];
+  for (const s of slots) {
+    const it = state.equipment[s];
+    if (!it) {
+      html += `<div class="eq-slot empty">
+        <div class="slot-label">${SLOT_NAMES[s]}</div>
+        <div class="slot-icon">${SLOT_ICONS[s]}</div>
+      </div>`;
+    } else {
+      const t = ITEM_TEMPLATES[it.templateId];
+      const gradeIdx = Math.max(GRADES.indexOf(it.potentialGrade), GRADES.indexOf(it.addPotentialGrade));
+      const hasPot = it.potentials.some(x=>x) || it.addPotentials.some(x=>x);
+      const borderColor = hasPot ? GRADE_COLORS[GRADES[gradeIdx]] : '#888';
+      const enh = it.enhanceLevel > 0 ? `<div class="slot-enh">+${it.enhanceLevel}</div>` : '';
+      html += `<div class="eq-slot" style="border-color:${borderColor}; box-shadow:0 0 8px ${borderColor}80;"
+                title="${t.name}${it.enhanceLevel>0?' +'+it.enhanceLevel:''}"
+                onclick="unequip('${s}')">
+        <div class="slot-label">${SLOT_NAMES[s]}</div>
+        ${enh}
+        <div class="slot-icon">${SLOT_ICONS[s]}</div>
+        <div class="slot-name">${t.name}</div>
+      </div>`;
+    }
+  }
+  // 8th cell empty for grid balance
+  html += `<div class="eq-slot empty" style="opacity:0.2"><div class="slot-icon">✨</div></div>`;
+  html += `</div></div>`;
+  return html;
+}
+
 function itemCardHtml(item, equipped) {
   const t = ITEM_TEMPLATES[item.templateId];
   const enh = item.enhanceLevel > 0 ? ` +${item.enhanceLevel}` : '';
   const realAtk = Math.floor(item.baseAtk * (1 + item.enhanceLevel * 0.2));
   const realDef = Math.floor(item.baseDef * (1 + item.enhanceLevel * 0.2));
   const baseStr = [
-    item.baseAtk > 0 ? `공격 +${realAtk}` : '',
-    item.baseDef > 0 ? `방어 +${realDef}` : '',
+    item.baseAtk > 0 ? `⚔️ +${realAtk}` : '',
+    item.baseDef > 0 ? `🛡️ +${realDef}` : '',
   ].filter(x=>x).join(' / ');
   const optStr = item.options.map(statLabel).join(', ') || '없음';
 
-  const gradeIdx = Math.max(
-    GRADES.indexOf(item.potentialGrade),
-    GRADES.indexOf(item.addPotentialGrade),
-  );
+  const gradeIdx = Math.max(GRADES.indexOf(item.potentialGrade), GRADES.indexOf(item.addPotentialGrade));
   const hasPot = item.potentials.some(x => x) || item.addPotentials.some(x => x);
   const borderColor = hasPot ? GRADE_COLORS[GRADES[gradeIdx]] : '#555';
 
@@ -1441,18 +2143,18 @@ function itemCardHtml(item, equipped) {
   if (item.enhanceLevel < MAX_ENHANCE) {
     actions += `<button class="gold" onclick="enhance('${item.uid}')" ${state.player.gold<cost?'disabled':''}>강화 (${cost}G)</button>`;
   }
-  actions += `<button onclick="applyCube('${item.uid}',false)" ${state.consumables.cube<=0?'disabled':''}>🧪 큐브 (${state.consumables.cube})</button>`;
-  actions += `<button onclick="applyCube('${item.uid}',true)" ${state.consumables.addCube<=0?'disabled':''}>🧪 에디 (${state.consumables.addCube})</button>`;
+  actions += `<button onclick="applyCube('${item.uid}',false)" ${state.consumables.cube<=0?'disabled':''}>🧪큐브 ${state.consumables.cube}</button>`;
+  actions += `<button onclick="applyCube('${item.uid}',true)" ${state.consumables.addCube<=0?'disabled':''}>🧪에디 ${state.consumables.addCube}</button>`;
   for (const ft of FLAME_TYPES) {
     const cnt = state.consumables['flame_'+ft];
     const initial = { small:'작', master:'명', eternal:'영', powerful:'강' }[ft];
-    actions += `<button class="flame" onclick="useFlame('${item.uid}','${ft}')" ${cnt<=0?'disabled':''} title="${FLAME_NAMES[ft]}">🔥${initial}(${cnt})</button>`;
+    actions += `<button class="flame" onclick="useFlame('${item.uid}','${ft}')" ${cnt<=0?'disabled':''} title="${FLAME_NAMES[ft]}">🔥${initial}${cnt}</button>`;
   }
   actions += `<button class="danger" onclick="sellItem('${item.uid}')">판매 ${getSellPrice(item)}G</button>`;
 
   return `
     <div class="item-card ${equipped?'equipped':''}" style="border-color:${borderColor};">
-      <div><span class="item-name">${t.name}${enh}</span> <span class="item-slot">[${t.slot}]</span></div>
+      <div><span class="item-name">${t.name}${enh}</span> <span class="item-slot">${SLOT_ICONS[item.slot]} ${SLOT_NAMES[item.slot]}</span></div>
       <div class="item-line">${baseStr}</div>
       <div class="item-opt">옵션: ${optStr}</div>
       <div class="item-pot">잠재 ${renderPotentialLine(item.potentials, item.potentialGrade)}</div>
@@ -1464,15 +2166,12 @@ function itemCardHtml(item, equipped) {
 }
 
 function renderCenter() {
-  let html = '<h2>🛡️ 장착</h2>';
-  for (const slot of ['weapon','armor','accessory']) {
-    const it = state.equipment[slot];
-    if (it) html += itemCardHtml(it, true);
-    else html += `<div class="empty">${slot} 슬롯 비어있음</div>`;
-  }
+  let html = renderPaperDoll();
   html += `<h2>🎒 인벤토리 (${state.inventory.length})</h2>`;
-  if (state.inventory.length === 0) html += '<div class="empty">아이템 없음</div>';
-  for (const it of state.inventory) html += itemCardHtml(it, false);
+  if (state.inventory.length === 0) html += '<div class="empty">아이템 없음 — 우측 [제작] 탭에서 만들어보세요</div>';
+  // 슬롯 순서로 정렬
+  const sorted = [...state.inventory].sort((a,b) => SLOT_ORDER.indexOf(a.slot) - SLOT_ORDER.indexOf(b.slot));
+  for (const it of sorted) html += itemCardHtml(it, false);
   document.getElementById('centerPanel').innerHTML = html;
 }
 
@@ -1482,34 +2181,41 @@ function renderRight() {
     <div class="tabs">
       <button class="${tab==='craft'?'active':''}" onclick="setTab('craft')">🔨 제작</button>
       <button class="${tab==='shop'?'active':''}" onclick="setTab('shop')">🏪 상점</button>
-      <button class="${tab==='info'?'active':''}" onclick="setTab('info')">📖 안내</button>
+      <button class="${tab==='quest'?'active':''}" onclick="setTab('quest')">📋 퀘스트</button>
+      <button class="${tab==='info'?'active':''}" onclick="setTab('info')">📖</button>
     </div>
   `;
   if (tab === 'craft')      html += renderCraftTab();
   else if (tab === 'shop')  html += renderShopTab();
+  else if (tab === 'quest') html += renderQuestTab();
   else if (tab === 'info')  html += renderInfoTab();
   document.getElementById('rightPanel').innerHTML = html;
 }
 
 function renderCraftTab() {
   let html = '';
-  for (const id in ITEM_TEMPLATES) {
-    const t = ITEM_TEMPLATES[id];
-    const ok = canCraft(id);
-    const recipeStr = Object.entries(t.recipe).map(([m,q]) => {
-      const have = state.materials[m] || 0;
-      const cls = have >= q ? '' : 'lack';
-      return `<span class="recipe-mat ${cls}">${MATERIALS[m].name} ${have}/${q}</span>`;
-    }).join(', ');
-    html += `
-      <div class="recipe-card">
-        <div><span class="recipe-name">${t.name}</span>
-             <span style="font-size:11px;color:#88ccff;">[${t.slot} T${t.tier}]</span></div>
-        <div style="font-size:11px;color:#ccc;">기본 공${t.baseAtk} 방${t.baseDef} / 옵션 ${t.tier}~${t.tier+1}개</div>
-        <div style="font-size:11px;margin:3px 0;">${recipeStr}</div>
-        <button class="success" onclick="craft('${id}')" ${ok?'':'disabled'}>제작</button>
-      </div>
-    `;
+  // 슬롯별 그룹
+  for (const slot of SLOT_ORDER) {
+    const items = Object.values(ITEM_TEMPLATES).filter(t => t.slot === slot);
+    if (!items.length) continue;
+    html += `<h3>${SLOT_ICONS[slot]} ${SLOT_NAMES[slot]}</h3>`;
+    for (const t of items) {
+      const ok = canCraft(t.id);
+      const recipeStr = Object.entries(t.recipe).map(([m,q]) => {
+        const have = state.materials[m] || 0;
+        const cls = have >= q ? '' : 'lack';
+        return `<span class="recipe-mat ${cls}">${MATERIALS[m].name} ${have}/${q}</span>`;
+      }).join(', ');
+      html += `
+        <div class="recipe-card">
+          <div><span class="recipe-name">${t.name}</span>
+               <span style="font-size:10px;color:#aaa;float:right;">T${t.tier}</span></div>
+          <div style="font-size:11px;color:#bbb;">기본 공${t.baseAtk} 방${t.baseDef} · 옵션 ${t.tier}~${t.tier+1}개</div>
+          <div style="font-size:11px;margin:3px 0;">${recipeStr}</div>
+          <button class="success" onclick="craft('${t.id}')" ${ok?'':'disabled'}>제작</button>
+        </div>
+      `;
+    }
   }
   return html;
 }
@@ -1519,10 +2225,10 @@ function renderShopTab() {
   html += `
     <div class="recipe-card">
       <div class="recipe-name">잠재 큐브 (메인 3슬롯)</div>
-      <div style="font-size:11px;color:#ccc;">잠재 리롤. 등급 상승 (레→에 10% / 에→유 5% / 유→레전 1%)</div>
+      <div style="font-size:11px;color:#ccc;">잠재 리롤. 등급 상승 확률 포함</div>
       <div style="margin-top:4px;">
         <button class="primary" onclick="buyCube(1)" ${state.player.gold<PRICE_CUBE?'disabled':''}>1개 (${PRICE_CUBE}G)</button>
-        <button class="primary" onclick="buyCube(10)" ${state.player.gold<PRICE_CUBE*10?'disabled':''}>10개 (${PRICE_CUBE*10}G)</button>
+        <button class="primary" onclick="buyCube(10)" ${state.player.gold<PRICE_CUBE*10?'disabled':''}>10개 (${fmt(PRICE_CUBE*10)}G)</button>
       </div>
     </div>
     <div class="recipe-card">
@@ -1530,7 +2236,7 @@ function renderShopTab() {
       <div style="font-size:11px;color:#ccc;">에디셔널 잠재 리롤</div>
       <div style="margin-top:4px;">
         <button class="primary" onclick="buyAddCube(1)" ${state.player.gold<PRICE_ADD_CUBE?'disabled':''}>1개 (${PRICE_ADD_CUBE}G)</button>
-        <button class="primary" onclick="buyAddCube(10)" ${state.player.gold<PRICE_ADD_CUBE*10?'disabled':''}>10개 (${PRICE_ADD_CUBE*10}G)</button>
+        <button class="primary" onclick="buyAddCube(10)" ${state.player.gold<PRICE_ADD_CUBE*10?'disabled':''}>10개 (${fmt(PRICE_ADD_CUBE*10)}G)</button>
       </div>
     </div>
   `;
@@ -1540,8 +2246,8 @@ function renderShopTab() {
     html += `
       <div class="recipe-card">
         <div class="recipe-name" style="color:${FLAME_COLORS[ft]}">${FLAME_NAMES[ft]}</div>
-        <div style="font-size:11px;color:#ccc;">보유 ${state.consumables['flame_'+ft]}개 · 4줄 보너스 스탯</div>
-        <button class="flame" onclick="buyFlame('${ft}',1)" ${state.player.gold<price?'disabled':''}>구매 (${price}G)</button>
+        <div style="font-size:11px;color:#ccc;">보유 ${state.consumables['flame_'+ft]}개</div>
+        <button class="flame" onclick="buyFlame('${ft}',1)" ${state.player.gold<price?'disabled':''}>구매 (${fmt(price)}G)</button>
       </div>
     `;
   }
@@ -1566,36 +2272,90 @@ function renderShopTab() {
   return html;
 }
 
+function renderQuestTab() {
+  const active = QUEST_TEMPLATES.filter(t => !state.quests.rewarded.includes(t.id));
+  const done   = QUEST_TEMPLATES.filter(t => state.quests.rewarded.includes(t.id));
+
+  let html = `<h3>📋 진행 중 (${active.length})</h3>`;
+  if (active.length === 0) html += '<div class="empty">모든 퀘스트 완료!</div>';
+  for (const t of active) {
+    const pg = questPg(t.id);
+    let cur, max, descStr;
+    if (t.type === 'kill' || t.type === 'craft' || t.type === 'elite') {
+      cur = pg; max = t.count;
+      descStr = t.type==='kill' ? `${t.target} 처치`
+            : t.type==='craft' ? '아이템 제작'
+            : '엘리트 처치';
+    } else if (t.type === 'level') {
+      cur = state.player.level; max = t.target;
+      descStr = `레벨 ${t.target} 달성`;
+    } else if (t.type === 'combo') {
+      cur = state.stats.maxCombo; max = t.target;
+      descStr = `최고 콤보 ${t.target}`;
+    } else if (t.type === 'enhance') {
+      cur = state.stats.maxEnhance; max = t.target;
+      descStr = `장비 +${t.target} 강화`;
+    } else if (t.type === 'legendary') {
+      cur = pg; max = 1;
+      descStr = '레전더리 등급 잠재 획득';
+    }
+    const pct = Math.min(100, (cur / max) * 100);
+    const rewardParts = [];
+    if (t.reward.gold) rewardParts.push(`💰 ${fmt(t.reward.gold)}G`);
+    if (t.reward.materials) for (const m in t.reward.materials) rewardParts.push(`📦 ${MATERIALS[m].name} ${t.reward.materials[m]}`);
+    if (t.reward.consumables) for (const c in t.reward.consumables) {
+      if (c.startsWith('flame_')) rewardParts.push(`🔥 ${FLAME_NAMES[c.replace('flame_','')]} ${t.reward.consumables[c]}`);
+      else if (c === 'cube') rewardParts.push(`🧪 큐브 ${t.reward.consumables[c]}`);
+      else if (c === 'addCube') rewardParts.push(`🧪 에디 ${t.reward.consumables[c]}`);
+    }
+    html += `
+      <div class="quest-card">
+        <div class="quest-name">${t.name}</div>
+        <div class="quest-desc">${descStr}</div>
+        <div class="quest-progress"><div style="width:${pct}%"></div></div>
+        <div style="font-size:11px;color:#aaa;">${Math.min(cur,max)} / ${max}</div>
+        <div class="quest-reward">${rewardParts.join(' · ')}</div>
+      </div>
+    `;
+  }
+
+  if (done.length > 0) {
+    html += `<h3>✅ 완료 (${done.length})</h3>`;
+    for (const t of done) {
+      html += `<div class="quest-card done">
+        <div class="quest-name done">✅ ${t.name}</div>
+      </div>`;
+    }
+  }
+  return html;
+}
+
 function renderInfoTab() {
   return `
-    <h3>⚡ 액션 시스템</h3>
+    <h3>⚡ 액션</h3>
     <div class="recipe-card">
-      <div class="recipe-name">⏱️ 속도 토글</div>
-      <div style="font-size:11px;color:#ccc;">x1 / x2 / x4 로 사냥 속도 변경. 애니메이션도 함께 가속.</div>
+      <div class="recipe-name">⏱️ 속도 토글 / 💢 강타 / 🔥 콤보</div>
+      <div style="font-size:11px;color:#ccc;">속도 x1/x2/x4 · 4공격마다 강타(3배) · 콤보 10/25/50/100 보너스</div>
     </div>
     <div class="recipe-card">
-      <div class="recipe-name">💢 강타 (자동 스킬)</div>
-      <div style="font-size:11px;color:#ccc;">${SKILL_PERIOD}번째 공격마다 자동 발동, ${SKILL_DMG_MULT}배 데미지. 씬 하단 게이지 확인.</div>
+      <div class="recipe-name">👑 엘리트 보스</div>
+      <div style="font-size:11px;color:#ccc;">한 맵에서 ${ELITE_INTERVAL}처치마다 등장. HP/공격 ${ELITE_HP_MULT}/${ELITE_ATK_MULT}배, 골드 ${ELITE_GOLD_MULT}배, 추가 큐브 드랍, 경험치 5배</div>
     </div>
+
+    <h3>📘 강화</h3>
     <div class="recipe-card">
-      <div class="recipe-name">🔥 콤보 보너스</div>
-      <div style="font-size:11px;color:#ccc;">연속 처치 — 사망 시 초기화<br>
-        ${COMBO_TIERS.slice(1).map(t => `<b style="color:#ffcc44">${t.at}</b>: ${t.label}`).join('<br>')}
-      </div>
-    </div>
-    <h3>📘 강화 시스템</h3>
-    <div class="recipe-card">
-      <div class="recipe-name">잠재 / 에디셔널</div>
-      <div style="font-size:11px;color:#ccc;">큐브로 리롤.
+      <div class="recipe-name">잠재 / 에디셔널 / 불꽃</div>
+      <div style="font-size:11px;color:#ccc;">큐브로 잠재 리롤 → 등급 상승.
         ${gradeBadge('rare')}${gradeBadge('epic')}${gradeBadge('unique')}${gradeBadge('legendary')}</div>
     </div>
     <div class="recipe-card">
-      <div class="recipe-name">환생의 불꽃</div>
-      <div style="font-size:11px;color:#ccc;">4줄 보너스 스탯. 강력한 불꽃은 광산 동굴 0.5% 드랍</div>
+      <div class="recipe-name">스타포스 강화 (+0 ~ +10)</div>
+      <div style="font-size:11px;color:#ccc;">단계당 기본 스탯 +20%. 6강부터 실패 시 단계 하락, 파괴 확률</div>
     </div>
+
+    <h3>💾 저장</h3>
     <div class="recipe-card">
-      <div class="recipe-name">강화 (+0 ~ +10)</div>
-      <div style="font-size:11px;color:#ccc;">단계당 기본 스탯 +20%. 6강부터 실패 시 단계 하락, 파괴 확률.</div>
+      <div style="font-size:11px;color:#ccc;">모든 변경사항은 브라우저에 자동 저장. 우측 하단 저장 인디케이터 확인 가능</div>
     </div>
   `;
 }
@@ -1621,13 +2381,22 @@ function render() {
    초기화
    ========================================================================= */
 
-// 시작 시 나무 검 무료 지급 + 자동 장착
-const starter = createItemInstance('wood_sword');
-state.equipment.weapon = starter;
-state.player.hp = getTotals().maxHp;
+const loaded = loadGame();
+if (!loaded) {
+  // 첫 시작: 나무 검 지급
+  const starter = createItemInstance('wood_sword');
+  state.equipment.weapon = starter;
+  state.player.hp = getTotals().maxHp;
+  log('🦸 마을에 도착! 나무 검을 받았습니다.', 'win');
+  log('💡 우측 [퀘스트] 탭에서 목표를 확인하세요.', 'gold');
+  showToast('🦸 모험을 시작합니다!', 'success', 3000);
+} else {
+  state.player.hp = Math.min(state.player.hp, getTotals().maxHp);
+  log('💾 진행 데이터를 불러왔습니다.', 'gold');
+  showToast('💾 진행 불러옴', 'success', 1500);
+}
 
-log('🦸 마을에 도착했습니다. 나무 검이 지급되었어요.', 'win');
-log('💡 우측 [안내] 탭에서 콤보·강타·속도 토글을 확인하세요.', 'gold');
+canSave = true;
 updateScene();
 render();
 </script>
